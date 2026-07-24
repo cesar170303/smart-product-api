@@ -1,0 +1,62 @@
+[
+    {
+        "name": "Mancuerna",
+        "price": 20.0,
+        "category": "Entrenamiento"
+    },
+    {
+        "name": "Mancuerna",
+        "price": 20.0,
+        "category": "Entrenamiento"
+    },
+    {
+        "name": "Mancuerna",
+        "price": 20.0,
+        "category": "Entrenamiento"
+    },
+    {
+        "name": "Mancuerna",
+        "price": 20.0,
+        "category": "Entrenamiento"
+    },
+    {
+        "name": "Lapiz",
+        "price": 20.0,
+        "category": "Material"
+    },
+    {
+        "name": "Bicicleta estática",
+        "price": 349.0,
+        "category": "Deporte"
+    },
+    {
+        "name": "Gorra",
+        "price": 349.0,
+        "category": "General"
+    },
+    {
+        "name": "Bicicleta estática",
+        "price": 349.0,
+        "category": "Deporte"
+    },
+    {
+        "name": "Bicicleta estática",
+        "price": 349.0,
+        "category": "Deporte"
+    },
+    {
+        "name": "Movil",
+        "price": 266.2,
+        "category": "Tecnologia"
+    },
+    {
+        "name": "Mancuerna",
+        "price": 1.0,
+        "category": "Deporte"
+    },
+    {
+        "name": "Zapatillas",
+        "price": 50.0,
+        "category": "General"
+    }
+]

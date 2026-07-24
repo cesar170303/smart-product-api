@@ -1,4 +1,4 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from main import DataPersistence
 from pydantic import BaseModel
 from pricing import PRICING_CALCULATORS, PricingStrategy
@@ -45,3 +45,21 @@ def add_products(new_product: ProductModel):
 
     datapersistence.save_product(actual_list)
     return {"mensaje": "Producto añadido correctamente", "Producto" : new_product}
+
+
+
+@app.delete("/delete_product/{product_name}")
+def delete_products(product_name : str):
+
+    actual_list = datapersistence.load_products()
+
+    # Creamos la nueva lista comparando sin importar mayúsculas
+    new_list = [x for x in actual_list if x["name"].casefold() != product_name.casefold()]
+
+    # Si miden lo mismo, el producto no estaba en la base de datos
+    if len(actual_list) == len(new_list):
+        raise HTTPException(status_code=404, detail="Product not found")
+
+    # Guardamos la lista nueva y devolvems el éxito
+    datapersistence.save_product(new_list)
+    return {"mensaje": f"El producto {product_name} ha sido eliminado correctamente"}

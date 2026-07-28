@@ -1,7 +1,9 @@
-from pydantic import BaseModel
+from sqlmodel import SQLModel, Field
 from pricing import PRICING_CALCULATORS, PricingStrategy
 
-class ProductModel(BaseModel):
+class ProductModel(SQLModel, table=True):
+
+    id : int | None = Field(default=None, primary_key=True)
     name:str
     price: float
     category:str = "Pendiente de IA"

@@ -1,10 +1,17 @@
 from fastapi import FastAPI, HTTPException
 from main import DataPersistence
 from models import ProductModel
+from sqlmodel import SQLModel
+from database import engine
 
 
 app = FastAPI()
 datapersistence = DataPersistence()
+
+@app.on_event("startup")
+def create_db_and_tabes():
+    print("Conectando a la base de datos y creando tablas...")
+    SQLModel.metadata.create_all(engine)
 
 
 

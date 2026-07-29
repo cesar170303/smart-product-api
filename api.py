@@ -1,13 +1,10 @@
 from fastapi import FastAPI, HTTPException, Depends
-from main import DataPersistence
 from models import ProductModel
 from sqlmodel import SQLModel, Session, select
 from database import engine, get_session
 from contextlib import asynccontextmanager
 
 
-
-datapersistence = DataPersistence()
 
 #async: significa que está diseñado para hacer varias cosas a la vez sin quedarse bloqueado
 #Este decorador es una herramienta que coge una función normal y corriente, busca la palabra yield,
@@ -66,57 +63,45 @@ def add_products(new_product: ProductModel, session: Session = Depends(get_sessi
     session.commit()
     session.refresh(new_product)
 
-    """dict_product = new_product.model_dump()
-    actual_list.append(dict_product)
-
-    datapersistence.save_product(actual_list)"""
-
     return {"mensaje": "Producto añadido correctamente", "Producto" : new_product}
 
 
 
 @app.delete("/delete_product/{product_name}")
-def delete_products(product_name : str):
+def delete_products(product_name : str, session: Session = Depends(get_session)):
 
-    actual_list = datapersistence.load_products()
+    statment = select(ProductModel).where(ProductModel.name == product_name)
+    product_found = session.exec(statment).first()
 
-    # Creamos la nueva lista comparando sin importar mayúsculas
-    new_list = [x for x in actual_list if x["name"].casefold() != product_name.casefold()]
+    if product_found is None:
+            raise HTTPException(status_code=404, detail="Product not found")
+    
+    session.delete(product_found)
+    session.commit()
 
-    # Si miden lo mismo, el producto no estaba en la base de datos
-    if len(actual_list) == len(new_list):
-        raise HTTPException(status_code=404, detail="Product not found")
-
-    # Guardamos la lista nueva y devolvemos el éxito
-    datapersistence.save_product(new_list)
     return {"mensaje": f"El producto {product_name} ha sido eliminado correctamente"}
 
 
 
+
 @app.put("/update_product/{product_name}")
-def update_product(product : ProductModel, product_name : str):
+def update_product(product : ProductModel, product_name : str, session: Session = Depends(get_session)):
 
-    actual_list = datapersistence.load_products()
-    product_found = False
+    statment = select(ProductModel).where(ProductModel.name == product_name)
+    product_found = session.exec(statment).first()
 
-    for i, current_product in enumerate(actual_list):
-        if current_product["name"].casefold() == product_name.casefold():
-
-            #Si no ponemos categoria en el update cogemos la actual y despues llamamos funcion del precio.
-            product.category = current_product["category"]
-
-            product.apply_pricing_rules()
-
-            dict_product = product.model_dump()
-            actual_list[i] = dict_product
-
-            product_found = True
-            break
-
-    if not product_found:
+    if product_found is None:
         #Importante el raise si no crea el objeto del error lo lee y sigue ejecutado hacia abajo
         raise HTTPException(status_code=404, detail="Product not found")
 
-    # Guardamos la lista completa y actualizada
-    datapersistence.save_product(actual_list)
-    return {"mensaje": f"El producto {product_name} ha sido actualizado correctamente"}
+    #Modificamos los valores con lo que nos llega del cliente
+    product_found.name = product.name
+    product_found.price = product.price
+    product_found.category = product.category
+
+    product_found.apply_pricing_rules()
+
+    session.commit()
+    session.refresh(product_found)
+
+    return {"mensaje": f"El producto {product_name} ha sido actualizado correctamente", "Producto": product_found} 

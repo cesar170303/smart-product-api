@@ -7,7 +7,7 @@ class PricingStrategy:
 class TecnhologyPricing(PricingStrategy):
     def calculate_final_price(self, base_price: float) -> float:
             
-            return base_price+(base_price * self.IVA / 100)
+            return base_price + (base_price * self.IVA / 100)
 
 class SportsPricing(PricingStrategy):
     def calculate_final_price(self, base_price: float) -> float:

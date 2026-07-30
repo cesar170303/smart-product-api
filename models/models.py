@@ -1,5 +1,5 @@
 from sqlmodel import SQLModel, Field
-from pricing import PRICING_CALCULATORS, PricingStrategy
+from services.pricing import PRICING_CALCULATORS, PricingStrategy
 
 class ProductModel(SQLModel, table=True):
 

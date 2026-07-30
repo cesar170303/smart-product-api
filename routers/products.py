@@ -1,29 +1,13 @@
-from fastapi import FastAPI, HTTPException, Depends
-from models import ProductModel
-from sqlmodel import SQLModel, Session, select
-from database import engine, get_session
-from contextlib import asynccontextmanager
+from fastapi import HTTPException, Depends, APIRouter
+from models.models import ProductModel
+from sqlmodel import Session, select
+from core.database import engine, get_session
+from services.ai_services import get_ai_category
 
 
+routers = APIRouter()
 
-#async: significa que está diseñado para hacer varias cosas a la vez sin quedarse bloqueado
-#Este decorador es una herramienta que coge una función normal y corriente, busca la palabra yield,
-#  y automáticamente construye esa clase por ti por debajo. Convierte lo que está antes del yield en el __enter__ y lo que está después en el __exit__.
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    print("Conectando a la base de datos y creando tablas...")
-    SQLModel.metadata.create_all(engine)
-
-    #la función pausa su ejecución y le devuelve el control al Event Loop de FastAPI/Uvicorn.
-    yield
-    #Esto se acabará ejecutando cuando cerramos el servidor
-    print("Cerrando las instalaciones...")
-
-
-app = FastAPI(lifespan=lifespan)
-
-
-@app.get("/products")
+@routers.get("/products")
 def products(session: Session = Depends(get_session)):
     """ 1. Construimos la pregunta select(ProductModel)
     Dame toda la información de la tabla ProductModel.
@@ -37,20 +21,10 @@ def products(session: Session = Depends(get_session)):
 
     return results
 
-def get_ai_category(product_name:str) -> str:
-    print(f"Analizando el producto {product_name}")
-
-    lower_name = product_name.lower()
-    if "mancuerna" in lower_name or "bici" in lower_name:
-        return "Deporte"
-    elif "movil" in lower_name or "tablet" in lower_name:
-        return "Tecnologia"
-    else:
-        return "General"
 
 
 
-@app.post("/add_products")
+@routers.post("/add_products")
 def add_products(new_product: ProductModel, session: Session = Depends(get_session)):
     
     #actual_list = datapersistence.load_products()
@@ -67,7 +41,7 @@ def add_products(new_product: ProductModel, session: Session = Depends(get_sessi
 
 
 
-@app.delete("/delete_product/{product_name}")
+@routers.delete("/delete_product/{product_name}")
 def delete_products(product_name : str, session: Session = Depends(get_session)):
 
     statment = select(ProductModel).where(ProductModel.name == product_name)
@@ -84,7 +58,7 @@ def delete_products(product_name : str, session: Session = Depends(get_session))
 
 
 
-@app.put("/update_product/{product_name}")
+@routers.put("/update_product/{product_name}")
 def update_product(product : ProductModel, product_name : str, session: Session = Depends(get_session)):
 
     statment = select(ProductModel).where(ProductModel.name == product_name)

@@ -1,7 +1,7 @@
 from fastapi import HTTPException, Depends, APIRouter
 from models.models import ProductModel
 from sqlmodel import Session, select
-from core.database import engine, get_session
+from core.database import get_session
 from services.ai_services import get_ai_category
 
 

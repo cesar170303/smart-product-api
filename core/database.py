@@ -1,8 +1,14 @@
 from sqlmodel import create_engine, Session
+import os
+from dotenv import load_dotenv
 
-DATABASE_URL = "postgresql://postgres:postgres@localhost:5432/postgres"
+# cargar el archivo .env
+load_dotenv()
 
-engine = create_engine(DATABASE_URL, echo=True)
+# Accede a las variables de entorno
+database_url = os.getenv("DATABASE_URL")
+
+engine = create_engine(database_url, echo=True)
 
 
 def get_session():

@@ -3,6 +3,7 @@ from google import genai
 
 load_dotenv()
 
+#No hace falta que le pase la Api key la recoge autmaticamente
 client = genai.Client()
 
 
@@ -17,6 +18,7 @@ def get_ai_category(product_name: str) -> str:
             que sea una frase nada de eso solo UNA palabra.
         """
 
+    #Ejecutamos una llamada a la nueva API de interacciones de Gemini
     response = client.interactions.create(
         model = "gemini-3.5-flash",
         input = prompt

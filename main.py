@@ -1,8 +1,8 @@
-from fastapi import FastAPI, APIRouter
+from fastapi import FastAPI
 from sqlmodel import SQLModel
 from core.database import engine
 from contextlib import asynccontextmanager
-from routers import products
+from router import products
 
 
 
@@ -22,5 +22,5 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(lifespan=lifespan)
 
-app.include_router(products.routers)
+app.include_router(products.router)
 

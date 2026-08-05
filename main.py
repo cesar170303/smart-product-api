@@ -1,9 +1,10 @@
-from fastapi import FastAPI, Request
+from fastapi import FastAPI
 from sqlmodel import SQLModel
 from core.database import engine
 from contextlib import asynccontextmanager
 from router import products
-from fastapi.responses import JSONResponse
+from core.exceptions import exception_handler, validation_exception_handler, Starlette_exception_handler
+
 from fastapi.exceptions import RequestValidationError
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
@@ -25,27 +26,9 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(lifespan=lifespan)
 
+app.add_exception_handler(RequestValidationError ,validation_exception_handler)
+app.add_exception_handler(StarletteHTTPException ,Starlette_exception_handler)
+app.add_exception_handler(Exception ,exception_handler)
 app.include_router(products.router)
 
 
-@app.exception_handler(RequestValidationError)
-async def validation_exception_handler(request: Request, exc: RequestValidationError):
-
-    return JSONResponse(
-        status_code = 422,
-        content =  {"mensaje": "Ha ocurrido un error por datos inválidos", "detalles: ": exc.errors()}
-    )
-
-@app.exception_handler(StarletteHTTPException)
-async def Starlette_exception_handler(request: Request, exc: StarletteHTTPException):
-    return JSONResponse(
-            status_code = exc.status_code,
-            content =  {"mensaje": exc.detail}
-        )
-
-@app.exception_handler(Exception)
-async def exception_handler(request: Request, exc: Exception):
-    return JSONResponse(
-            status_code = 500,
-            content =  {"mensaje": f"Ha ocurrido un error en el servidor"}
-        )

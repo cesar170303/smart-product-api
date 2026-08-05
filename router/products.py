@@ -4,7 +4,6 @@ from sqlmodel import Session, select
 from core.database import get_session
 from services.ai_services import get_ai_category
 
-
 router = APIRouter()
 
 @router.get("/products")
@@ -86,6 +85,5 @@ def update_product(product : ProductModel, product_id : int, session: Session = 
     session.refresh(product_found)
 
     return {"mensaje": f"El producto {product_found.name} ha sido actualizado correctamente", "Producto": product_found}
-
 
 

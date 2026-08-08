@@ -1,12 +1,12 @@
 from fastapi import HTTPException, Depends, APIRouter
-from models.models import ProductModel
+from models.models import ProductModel,ProductBase, ProductCreate, ProductPublic
 from sqlmodel import Session, select
 from core.database import get_session
 from services.ai_services import get_ai_category
 
 router = APIRouter()
 
-@router.get("/products")
+@router.get("/products",response_model=list[ProductPublic])
 def get_all_products(session: Session = Depends(get_session)):
 
     statment = select(ProductModel)
@@ -17,9 +17,8 @@ def get_all_products(session: Session = Depends(get_session)):
 
 
 
-@router.get("/products/{product_id}")
+@router.get("/products/{product_id}",response_model=ProductPublic)
 def get_product_by_id(product_id: int ,session: Session = Depends(get_session)):
-    """ Endpoit solamente para buscar un prducto por su ID"""
     
     product_found = session.get(ProductModel, product_id)
 
@@ -32,18 +31,21 @@ def get_product_by_id(product_id: int ,session: Session = Depends(get_session)):
 
 
 @router.post("/products")
-def add_products(new_product: ProductModel, session: Session = Depends(get_session)):
+def add_products(new_product: ProductCreate, session: Session = Depends(get_session)):
+
+    db_product = ProductModel.model_validate(new_product)
+    if not db_product.category:
+            category_ai = get_ai_category(db_product.name)
+            db_product.category = category_ai
+
     
+    db_product.apply_pricing_rules()
 
-    category_ai = get_ai_category(new_product.name)
-    new_product.category = category_ai
-    new_product.apply_pricing_rules()
-
-    session.add(new_product)
+    session.add(db_product)
     session.commit()
-    session.refresh(new_product)
+    session.refresh(db_product)
 
-    return {"mensaje": "Producto añadido correctamente", "Producto" : new_product}
+    return {"mensaje": "Producto añadido correctamente", "Producto" : db_product}
 
 
 
@@ -63,27 +65,28 @@ def delete_products(product_id : int, session: Session = Depends(get_session)):
 
 
 @router.put("/products/{product_id}")
-def update_product(product : ProductModel, product_id : int, session: Session = Depends(get_session)):
+def update_product(product : ProductCreate, product_id : int, session: Session = Depends(get_session)):
 
     product_found = session.get(ProductModel, product_id)
 
     if product_found is None:
         raise HTTPException(status_code=404, detail=f"Product not found {product_id} with that ID")
 
+    db_product = ProductModel.model_validate(product_found)
+    
+    db_product.name = product.name
+    db_product.price = product.price
+    db_product.category = product.category
 
-    product_found.name = product.name
-    product_found.price = product.price
-    product_found.category = product.category
+    if not db_product.category:
+        category_ai = get_ai_category(db_product.name)
+        db_product.category = category_ai
 
-    if not product_found.category:
-        category_ai = get_ai_category(product_found.name)
-        product_found.category = category_ai
-
-    product_found.apply_pricing_rules()
+    db_product.apply_pricing_rules()
 
     session.commit()
-    session.refresh(product_found)
+    session.refresh(db_product)
 
-    return {"mensaje": f"El producto {product_found.name} ha sido actualizado correctamente", "Producto": product_found}
+    return {"mensaje": f"El producto {db_product.name} ha sido actualizado correctamente", "Producto": db_product}
 
 

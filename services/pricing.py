@@ -12,7 +12,7 @@ class TecnhologyPricing(PricingStrategy):
 class SportsPricing(PricingStrategy):
     def calculate_final_price(self, base_price: float) -> float:
             
-            return 0 if base_price <= 10 else base_price - 10
+            return 1 if base_price <= 10 else base_price - 10
 
 
 # Este diccionario asocia el nombre de la categoría (string) con la CLASE correspondiente.

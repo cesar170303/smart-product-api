@@ -1,17 +1,17 @@
 from fastapi import HTTPException, Depends, APIRouter
-from models.models import ProductModel,ProductBase, ProductCreate, ProductPublic
+from models.models import ProductModel, ProductCreate, ProductPublic
 from sqlmodel import Session, select
 from core.database import get_session
 from services.ai_services import get_ai_category
+from use_cases.CreateProduct import create_new_product
+from use_cases.GetAllProduct import get_all_product
 
 router = APIRouter()
 
 @router.get("/products",response_model=list[ProductPublic])
 def get_all_products(session: Session = Depends(get_session)):
 
-    statment = select(ProductModel)
-
-    results = session.exec(statment).all()
+    results = get_all_product(session)
 
     return results
 
@@ -33,17 +33,7 @@ def get_product_by_id(product_id: int ,session: Session = Depends(get_session)):
 @router.post("/products")
 def add_products(new_product: ProductCreate, session: Session = Depends(get_session)):
 
-    db_product = ProductModel.model_validate(new_product)
-    if not db_product.category:
-            category_ai = get_ai_category(db_product.name)
-            db_product.category = category_ai
-
-    
-    db_product.apply_pricing_rules()
-
-    session.add(db_product)
-    session.commit()
-    session.refresh(db_product)
+    db_product = create_new_product(new_product, session)
 
     return {"mensaje": "Producto añadido correctamente", "Producto" : db_product}
 

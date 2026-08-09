@@ -1,5 +1,3 @@
-
-
 from sqlmodel import Session
 from models.models import ProductCreate, ProductModel
 from services.ai_services import get_ai_category

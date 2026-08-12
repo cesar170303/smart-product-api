@@ -3,7 +3,7 @@ from sqlmodel import SQLModel
 from core.database import engine
 from contextlib import asynccontextmanager
 from router import products
-from core.exceptions import exception_handler, validation_exception_handler, Starlette_exception_handler
+from core.exceptions import ProductNotFoundException, exception_handler, product_not_found_exception_handler, validation_exception_handler, Starlette_exception_handler
 
 from fastapi.exceptions import RequestValidationError
 from starlette.exceptions import HTTPException as StarletteHTTPException
@@ -29,6 +29,7 @@ app = FastAPI(lifespan=lifespan)
 app.add_exception_handler(RequestValidationError ,validation_exception_handler)
 app.add_exception_handler(StarletteHTTPException ,Starlette_exception_handler)
 app.add_exception_handler(Exception ,exception_handler)
+app.add_exception_handler(ProductNotFoundException ,product_not_found_exception_handler)
 app.include_router(products.router)
 
 

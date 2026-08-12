@@ -1,13 +1,7 @@
-
-from sqlmodel import Session,select
-
-from models.models import ProductModel
+from repository.product_repository import ProductRepository
 
 
-def get_all_product(session: Session):
+def get_all_product(repository: ProductRepository):
 
-    statment = select(ProductModel)
-
-    results = session.exec(statment).all()
-
-    return results
+    return repository.get_products()
+    

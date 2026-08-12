@@ -1,18 +1,14 @@
-from sqlmodel import Session
-from fastapi import HTTPException
-
 from core.exceptions import ProductNotFoundException
-from models.models import ProductModel
+from repository.product_repository import ProductRepository
 
 
-def delete_product(product_id : int, session: Session ):
-    
-    product_found = session.get(ProductModel, product_id)
+def delete_product(repository: ProductRepository, product_id: int):
+
+    product_found = repository.get_product_by_id(product_id)
 
     if not product_found:
         raise ProductNotFoundException(product_id)
 
-    session.delete(product_found)
-    session.commit()
+    repository.delete_product(product_found)
 
     return product_found.name

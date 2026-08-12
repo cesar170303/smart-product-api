@@ -1,13 +1,11 @@
-from sqlmodel import Session
-
 from core.exceptions import ProductNotFoundException
-from models.models import ProductModel
+from repository.product_repository import ProductRepository
 
 
-def get_product_id(product_id: int ,session: Session):
+def get_product_id(repository: ProductRepository, product_id: int):
 
-    product_found = session.get(ProductModel, product_id)
-    
+    product_found = repository.get_product_by_id(product_id)
+
     if not product_found:
         raise ProductNotFoundException(product_id)
 

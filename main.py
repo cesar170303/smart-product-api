@@ -8,6 +8,14 @@ from core.exceptions import ProductNotFoundException, exception_handler, product
 from fastapi.exceptions import RequestValidationError
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
+from fastapi.middleware.cors import CORSMiddleware
+
+origins = [
+    "http://localhost:3000",
+    "http://localhost:8000",
+    "http://localhost:8080",
+    "http://localhost:5173"
+]
 
 
 #async: significa que está diseñado para hacer varias cosas a la vez sin quedarse bloqueado
@@ -25,6 +33,14 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(lifespan=lifespan)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"]
+)
 
 app.add_exception_handler(RequestValidationError ,validation_exception_handler)
 app.add_exception_handler(StarletteHTTPException ,Starlette_exception_handler)

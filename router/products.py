@@ -8,7 +8,9 @@ from use_cases.GetGroductId import get_product_id
 from use_cases.DeleteProduct import delete_product
 from use_cases.UpdateProduct import update_products
 from repository.product_repository import ProductRepository
+from fastapi.security import OAuth2PasswordBearer
 
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
 
 router = APIRouter()
 
@@ -33,7 +35,7 @@ def get_product_by_id(product_id: int ,session: Session = Depends(get_session)):
 
 
 @router.post("/products")
-def add_products(new_product: ProductCreate, session: Session = Depends(get_session)):
+def add_products(new_product: ProductCreate, session: Session = Depends(get_session), token: str = Depends(oauth2_scheme)):
 
     repo = ProductRepository(session)
     db_product = create_new_product(repo, new_product)
@@ -48,8 +50,6 @@ def delete_products(product_id : int, session: Session = Depends(get_session)):
     repo = ProductRepository(session)
     product_found = delete_product(repo, product_id)
     return {"mensaje": f"El producto ({product_found}) ha sido eliminado correctamente"}
-    
-
 
 
 

@@ -1,5 +1,5 @@
 from sqlmodel import SQLModel, Field
-from services.pricing import PRICING_CALCULATORS, PricingStrategy
+from services.pricing import get_pricing_strategy
 
 
 class ProductBase(SQLModel):
@@ -19,8 +19,7 @@ class ProductModel(ProductBase, table=True):
     provider_secret_cost: float = 2.0
 
     def apply_pricing_rules(self):
-        calculador = PRICING_CALCULATORS.get(self.category, PricingStrategy())
-        self.price = calculador.calculate_final_price(self.price)
+        self.price = get_pricing_strategy(self.category).calculate_final_price(self.price)
 
 class ProductPublic(ProductBase):
     id : int

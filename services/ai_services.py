@@ -1,7 +1,5 @@
-from dotenv import load_dotenv
 from google import genai
 
-load_dotenv()
 
 #No hace falta que le pase la Api key la recoge autmaticamente
 client = genai.Client()

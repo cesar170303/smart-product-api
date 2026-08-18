@@ -45,7 +45,7 @@ def add_products(new_product: ProductCreate, session: Session = Depends(get_sess
 
 
 @router.delete("/products/{product_id}")
-def delete_products(product_id : int, session: Session = Depends(get_session)):
+def delete_products(product_id : int, session: Session = Depends(get_session), token: str = Depends(oauth2_scheme)):
     
     repo = ProductRepository(session)
     product_found = delete_product(repo, product_id)
@@ -54,7 +54,7 @@ def delete_products(product_id : int, session: Session = Depends(get_session)):
 
 
 @router.put("/products/{product_id}")
-def update_product(product : ProductCreate, product_id : int, session: Session = Depends(get_session)):
+def update_product(product : ProductCreate, product_id : int, session: Session = Depends(get_session), token: str = Depends(oauth2_scheme)):
 
     repo = ProductRepository(session)
     product_found = update_products(repo, product, product_id)

@@ -56,11 +56,13 @@ En `services/pricing.py`, cada categoría tiene su propia estrategia de precios:
 
 | Categoría | Estrategia | Regla |
 |-----------|-----------|-------|
-| `Tecnologia` | `TecnhologyPricing` | +21% IVA sobre el precio base. |
-| `Deporte` | `SportsPricing` | -10€ si el precio supera 10€; si no, precio mínimo de 1€. |
-| Otras / `General` | `PricingStrategy` | Precio sin modificaciones. |
+| `Tecnologia` | `IvaPricing` | +21% IVA sobre el precio base. |
+| `Deporte` | `PercentageDiscountPricing` | -10% de descuento sobre el precio base. |
+| `Ofertas` | `FixedDiscountPricing` | -5€ con precio mínimo de 1€. |
+| `Premium` | `PremiumPricing` | +25% de margen sobre el precio base. |
+| Otras / `General` | `StandardPricing` | Precio sin modificaciones. |
 
-> 💡 La clase base define un IVA del 21% reutilizable y el cálculo por defecto devuelve el precio intacto.
+> 💡 Las categorías se normalizan (sin acentos y en minúsculas) antes de buscar su estrategia, de modo que valores de la IA como "Tecnología" o "Tecnologia" apuntan a la misma regla. Añadir una nueva regla solo requiere crear una clase y registrarla en `PRICING_CALCULATORS`.
 
 ---
 

@@ -1,4 +1,4 @@
-from models.models import ProductModel
+from models.Product import ProductModel
 from sqlmodel import Session, select
 
 class ProductRepository:

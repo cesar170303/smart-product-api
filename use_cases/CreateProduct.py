@@ -1,4 +1,4 @@
-from models.models import ProductCreate, ProductModel
+from models.Product import ProductCreate, ProductModel
 from repository.product_repository import ProductRepository
 from services.ai_services import get_ai_category
 

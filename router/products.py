@@ -17,7 +17,7 @@ from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
 
-router = APIRouter()
+router = APIRouter(tags=["Products"])
 
 @router.get("/products",response_model=list[ProductPublic])
 def get_all_products(session: Session = Depends(get_session)):
@@ -66,7 +66,7 @@ def update_product(product : ProductCreate, product_id : int, session: Session =
 
 
 
-@router.post("/register")
+@router.post("/register", tags=["Authentication"])
 def register_users(user: UserCreate, session: Session = Depends(get_session)):
 
     repo = UserRepository(session)
@@ -75,7 +75,7 @@ def register_users(user: UserCreate, session: Session = Depends(get_session)):
 
 
 
-@router.post("/login")
+@router.post("/login", tags=["Authentication"])
 def login(form_data: OAuth2PasswordRequestForm = Depends(), session: Session = Depends(get_session)):
 
     repo = UserRepository(session)

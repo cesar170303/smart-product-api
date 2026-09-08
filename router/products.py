@@ -1,18 +1,14 @@
-from fastapi import Depends, APIRouter, HTTPException, status
-from core.security import create_access_token, verify_password
+from fastapi import Depends, APIRouter
 from models.Product import ProductCreate, ProductPublic
 from sqlmodel import Session
 from core.database import get_session
-from models.User import UserCreate
-from repository.user_repository import UserRepository
 from use_cases.CreateProduct import create_new_product
 from use_cases.GetAllProduct import get_all_product
 from use_cases.GetGroductId import get_product_id
 from use_cases.DeleteProduct import delete_product
-from use_cases.RegisterUser import register_user
 from use_cases.UpdateProduct import update_products
 from repository.product_repository import ProductRepository
-from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
+from fastapi.security import OAuth2PasswordBearer
 
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
@@ -65,17 +61,17 @@ def update_product(product : ProductCreate, product_id : int, session: Session =
     return {"mensaje": f"El producto {product_found.name} ha sido actualizado correctamente", "Producto": product_found.model_dump()}
 
 
-
+"""
 @router.post("/register", tags=["Authentication"])
 def register_users(user: UserCreate, session: Session = Depends(get_session)):
 
     repo = UserRepository(session)
     db_user = register_user(repository=repo, user_data=user)
-    return {"mensaje": "Usuario registrado correctamente", "Usuario": db_user}
+    return {"mensaje": "Usuario registrado correctamente", "Usuario": db_user}"""
 
 
 
-@router.post("/login", tags=["Authentication"])
+"""@router.post("/login", tags=["Authentication"])
 def login(form_data: OAuth2PasswordRequestForm = Depends(), session: Session = Depends(get_session)):
 
     repo = UserRepository(session)
@@ -88,3 +84,4 @@ def login(form_data: OAuth2PasswordRequestForm = Depends(), session: Session = D
 
     return {"access_token": access_token, "token_type": "bearer"}
 
+"""

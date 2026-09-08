@@ -32,7 +32,7 @@ async def lifespan(app: FastAPI):
     print("Cerrando las instalaciones...")
 
 
-app = FastAPI(lifespan=lifespan)
+app = FastAPI(lifespan=lifespan, title="Smart Product App", description="API para la gestión de productos inteligentes", version="1.0.0")
 
 app.add_middleware(
     CORSMiddleware,

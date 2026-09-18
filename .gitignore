@@ -1,4 +1,10 @@
-.venv/
-__pycache__/
-productos.json
+# Python
 .env
+__pycache__/
+*.pyc
+venv/
+.venv/
+
+# Frontend / Node
+node_modules/
+dist/

@@ -1,8 +1,8 @@
 
-from backend.models.Product import ProductCreate
-from backend.repository.product_repository import ProductRepository
-from backend.services.ai_services import get_ai_category
-from backend.core.exceptions import ProductNotFoundException
+from models.Product import ProductCreate
+from repository.product_repository import ProductRepository
+from services.ai_services import get_ai_category
+from core.exceptions import ProductNotFoundException
 
 def update_products(repository: ProductRepository, product: ProductCreate, product_id: int):
 

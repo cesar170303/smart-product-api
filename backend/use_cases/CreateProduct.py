@@ -1,6 +1,6 @@
-from backend.models.Product import ProductCreate, ProductModel
-from backend.repository.product_repository import ProductRepository
-from backend.services.ai_services import get_ai_category
+from models.Product import ProductCreate, ProductModel
+from repository.product_repository import ProductRepository
+from services.ai_services import get_ai_category
 
 
 def create_new_product(repository: ProductRepository, product_data: ProductCreate):

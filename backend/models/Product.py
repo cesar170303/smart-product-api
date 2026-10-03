@@ -1,5 +1,5 @@
 from sqlmodel import SQLModel, Field
-from backend.services.pricing import get_pricing_strategy
+from services.pricing import get_pricing_strategy
 
 
 class ProductBase(SQLModel):

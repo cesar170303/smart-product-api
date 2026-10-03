@@ -1,11 +1,11 @@
-from backend.core.database import get_session
-from backend.core.security import create_access_token, verify_password
+from core.database import get_session
+from core.security import create_access_token, verify_password
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlmodel import Session
-from backend.models.User import UserCreate
-from backend.repository.user_repository import UserRepository
-from backend.use_cases.RegisterUser import register_user
+from models.User import UserCreate
+from repository.user_repository import UserRepository
+from use_cases.RegisterUser import register_user
 
 router = APIRouter(tags=["Authentication"])
 

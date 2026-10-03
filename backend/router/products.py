@@ -1,13 +1,13 @@
 from fastapi import Depends, APIRouter
-from backend.models.Product import ProductCreate, ProductPublic
+from models.Product import ProductCreate, ProductPublic
 from sqlmodel import Session
-from backend.core.database import get_session
-from backend.use_cases.CreateProduct import create_new_product
-from backend.use_cases.GetAllProduct import get_all_product
-from backend.use_cases.GetGroductId import get_product_id
-from backend.use_cases.DeleteProduct import delete_product
-from backend.use_cases.UpdateProduct import update_products
-from backend.repository.product_repository import ProductRepository
+from core.database import get_session
+from use_cases.CreateProduct import create_new_product
+from use_cases.GetAllProduct import get_all_product
+from use_cases.GetGroductId import get_product_id
+from use_cases.DeleteProduct import delete_product
+from use_cases.UpdateProduct import update_products
+from repository.product_repository import ProductRepository
 from fastapi.security import OAuth2PasswordBearer
 
 

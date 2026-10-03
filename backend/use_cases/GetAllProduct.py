@@ -1,4 +1,4 @@
-from backend.repository.product_repository import ProductRepository
+from repository.product_repository import ProductRepository
 
 
 def get_all_product(repository: ProductRepository):

@@ -1,4 +1,4 @@
-from backend.models.User import UserModel
+from models.User import UserModel
 from sqlmodel import Session, select
 
 class UserRepository:

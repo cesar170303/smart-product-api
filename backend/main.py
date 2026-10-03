@@ -1,10 +1,9 @@
 from fastapi import FastAPI
 from sqlmodel import SQLModel
-from backend.core.database import engine
+from core.database import engine
 from contextlib import asynccontextmanager
-from backend.router import auth
-from backend.router import products
-from backend.core.exceptions import ProductNotFoundException, exception_handler, product_not_found_exception_handler, validation_exception_handler, Starlette_exception_handler
+from router import auth, products
+from core.exceptions import ProductNotFoundException, exception_handler, product_not_found_exception_handler, validation_exception_handler, Starlette_exception_handler
 
 from fastapi.exceptions import RequestValidationError
 from starlette.exceptions import HTTPException as StarletteHTTPException
@@ -12,10 +11,8 @@ from starlette.exceptions import HTTPException as StarletteHTTPException
 from fastapi.middleware.cors import CORSMiddleware
 
 origins = [
-    "http://localhost:3000",
-    "http://localhost:8000",
-    "http://localhost:8080",
-    "http://localhost:5173"
+    "http://localhost:5173",
+    "http://127.0.0.1:5173"
 ]
 
 

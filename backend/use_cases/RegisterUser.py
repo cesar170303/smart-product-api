@@ -1,6 +1,6 @@
-from backend.models.User import UserCreate, UserModel
-from backend.repository.user_repository import UserRepository
-from backend.core.security import get_password_hash
+from models.User import UserCreate, UserModel
+from repository.user_repository import UserRepository
+from core.security import get_password_hash
 
 def register_user(repository: UserRepository, user_data: UserCreate):
     """

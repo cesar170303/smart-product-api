@@ -1,5 +1,5 @@
-from backend.core.exceptions import ProductNotFoundException
-from backend.repository.product_repository import ProductRepository
+from core.exceptions import ProductNotFoundException
+from repository.product_repository import ProductRepository
 
 
 def delete_product(repository: ProductRepository, product_id: int):

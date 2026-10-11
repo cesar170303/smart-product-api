@@ -1,0 +1,6 @@
+[lint]
+# Code smells: complejidad (C901, PLR0912, PLR0915) y magic values (PLR2004)
+select = ["C901", "PLR2004", "PLR0912", "PLR0915"]
+
+[lint.mccabe]
+max-complexity = 10

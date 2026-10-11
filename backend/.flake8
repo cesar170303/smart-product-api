@@ -1,0 +1,5 @@
+[flake8]
+# Solo complejidad cognitiva, mismo umbral que SonarJS en el frontend
+select = CCR
+max-cognitive-complexity = 15
+exclude = __pycache__

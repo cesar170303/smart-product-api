@@ -1,4 +1,4 @@
-from fastapi import Depends, APIRouter
+from fastapi import Depends, APIRouter, Request
 from models.Product import ProductCreate, ProductPublic
 from sqlmodel import Session
 from core.database import get_session
@@ -9,14 +9,20 @@ from use_cases.DeleteProduct import delete_product
 from use_cases.UpdateProduct import update_products
 from repository.product_repository import ProductRepository
 from fastapi.security import OAuth2PasswordBearer
+from core.rate_limit import limiter
 
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
 
 router = APIRouter(tags=["Products"])
 
+# Un solo contador por IP para todos los endpoints de /products (como app.use('/products', limiter) en Express):
+# 5 peticiones por minuto en total, sumando GET, POST, PUT y DELETE
+products_limit = limiter.shared_limit("5/minute", scope="products")
+
 @router.get("/products",response_model=list[ProductPublic])
-def get_all_products(session: Session = Depends(get_session)):
+@products_limit
+def get_all_products(request: Request, session: Session = Depends(get_session)):
 
     repo = ProductRepository(session)
     results = get_all_product(repo)
@@ -26,7 +32,8 @@ def get_all_products(session: Session = Depends(get_session)):
 
 
 @router.get("/products/{product_id}",response_model=ProductPublic)
-def get_product_by_id(product_id: int ,session: Session = Depends(get_session)):
+@products_limit
+def get_product_by_id(request: Request, product_id: int ,session: Session = Depends(get_session)):
 
     repo = ProductRepository(session)
     product_found = get_product_id(repo, product_id)
@@ -35,7 +42,8 @@ def get_product_by_id(product_id: int ,session: Session = Depends(get_session)):
 
 
 @router.post("/products")
-def add_products(new_product: ProductCreate, session: Session = Depends(get_session), token: str = Depends(oauth2_scheme)):
+@products_limit
+def add_products(request: Request, new_product: ProductCreate, session: Session = Depends(get_session), token: str = Depends(oauth2_scheme)):
 
     repo = ProductRepository(session)
     db_product = create_new_product(repo, new_product)
@@ -45,7 +53,8 @@ def add_products(new_product: ProductCreate, session: Session = Depends(get_sess
 
 
 @router.delete("/products/{product_id}")
-def delete_products(product_id : int, session: Session = Depends(get_session), token: str = Depends(oauth2_scheme)):
+@products_limit
+def delete_products(request: Request, product_id : int, session: Session = Depends(get_session), token: str = Depends(oauth2_scheme)):
     
     repo = ProductRepository(session)
     product_found = delete_product(repo, product_id)
@@ -54,7 +63,8 @@ def delete_products(product_id : int, session: Session = Depends(get_session), t
 
 
 @router.put("/products/{product_id}")
-def update_product(product : ProductCreate, product_id : int, session: Session = Depends(get_session), token: str = Depends(oauth2_scheme)):
+@products_limit
+def update_product(request: Request, product : ProductCreate, product_id : int, session: Session = Depends(get_session), token: str = Depends(oauth2_scheme)):
 
     repo = ProductRepository(session)
     product_found = update_products(repo, product, product_id)

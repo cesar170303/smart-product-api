@@ -87,7 +87,8 @@ En `services/pricing.py`, cada categoría tiene su propia estrategia:
 
 - **Registro** (`POST /register`) — las contraseñas se guardan con hash **Argon2** (`pwdlib`).
 - **Login** (`POST /login`) — valida credenciales (OAuth2 *password flow*) y devuelve un token **JWT** firmado.
-- Las operaciones de escritura sobre productos (`POST`/`PUT`/`DELETE`) requieren autenticación `Bearer`.
+- Las operaciones de escritura sobre productos (`POST`/`PUT`/`DELETE`) requieren autenticación `Bearer`; se valida la firma, la caducidad y el usuario del token (`core/dependencies.py`).
+- **Rate limiting** con `slowapi` (`core/rate_limit.py`): los endpoints de `/products` comparten un límite de 5 peticiones por minuto por IP.
 
 Documentación    | Ruta
 -----------------|-----------------------------------
@@ -137,9 +138,11 @@ Todos los errores responden con un JSON uniforme en español gracias a `core/exc
 
 | Código | Escenario | Respuesta |
 |--------|-----------|-----------|
-| `401` | Credenciales inválidas en `/login` | `{"detail": "Incorrect username or password"}` |
+| `401` | Credenciales inválidas en `/login` | `{"mensaje": "Incorrect username or password"}` |
+| `401` | Token caducado o inválido | `{"mensaje": "El token ha expirado"}` / `{"mensaje": "No se han podido validar las credenciales"}` |
 | `404` | Producto no encontrado | `{"mensaje": "Product with ID {id} not found"}` |
 | `422` | Datos de entrada inválidos | `{"mensaje": "...", "detalles": [...]}` |
+| `429` | Límite de peticiones superado | `{"mensaje": "Demasiadas peticiones. Inténtalo de nuevo en un minuto"}` |
 | `5xx` | Error HTTP de Starlette / error de servidor | `{"mensaje": "..."}` |
 
 ---
@@ -155,8 +158,8 @@ Todos los errores responden con un JSON uniforme en español gracias a `core/exc
 ### 1. Clonar el repositorio
 
 ```bash
-git clone https://github.com/cesar170303/smart_product_app.git
-cd smart_product_app
+git clone https://github.com/cesar170303/smart-product-api.git
+cd smart-product-api
 ```
 
 ### 2. Crear y activar el entorno virtual
@@ -181,7 +184,7 @@ pip install -r requirements.txt
 
 ### 4. Configurar variables de entorno
 
-Crea un archivo `.env` en la raíz del proyecto (no se sube a git):
+Crea un archivo `.env` dentro de la carpeta `backend/` (no se sube a git):
 
 ```env
 DATABASE_URL="postgresql://usuario:contraseña@localhost:5432/nombre_bd"
@@ -191,11 +194,14 @@ ALGORITHM="HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES=30
 ```
 
-> **Nota:** Si no existe `DATABASE_URL`, la aplicación falla al arrancar con un mensaje claro. El archivo `.env` está ignorado por git (`.gitignore`) por seguridad.
+> **Nota:** Si falta `DATABASE_URL` o `SECRET_KEY`, o si `ALGORITHM` o `ACCESS_TOKEN_EXPIRE_MINUTES` tienen un valor no válido, la aplicación falla al arrancar con un mensaje claro. Si no defines `ACCESS_TOKEN_EXPIRE_MINUTES`, se usan 30 minutos. El archivo `.env` está ignorado por git (`.gitignore`) por seguridad.
 
 ### 5. Iniciar el servidor
 
+Los imports del backend son relativos a `backend/`, así que el servidor se lanza desde esa carpeta:
+
 ```bash
+cd backend
 uvicorn main:app --reload
 ```
 
@@ -231,36 +237,45 @@ curl -X POST "http://localhost:8000/products" \
 
 ```
 smart_product_app/
-├── main.py                     # Configuración de FastAPI, lifespan, CORS y handlers globales
-├── requirements.txt            # Dependencias del proyecto
-├── .env                        # Variables de entorno (NO versionado)
+├── requirements.txt                # Dependencias del backend (único requirements.txt)
 ├── .gitignore
-├── core/
-│   ├── database.py             # Motor y sesiones de SQLAlchemy/SQLModel
-│   ├── exceptions.py           # Excepciones y handlers globales de error
-│   └── security.py             # Hash Argon2 y creación de tokens JWT
-├── models/
-│   ├── Product.py              # DTOs y modelo de tabla de productos (SQLModel)
-│   └── User.py                 # DTOs y modelo de tabla de usuarios (SQLModel)
-├── repository/
-│   ├── product_repository.py   # Acceso a datos de productos (Repository Pattern)
-│   └── user_repository.py      # Acceso a datos de usuarios (Repository Pattern)
-├── router/
-│   ├── products.py             # Endpoints REST de productos + autenticación
-│   └── auth.py                 # Endpoints de registro y login
-├── services/
-│   ├── ai_services.py          # Integración con Google Gemini (clasificación)
-│   └── pricing.py              # Motor de precios (Strategy Pattern)
-└── use_cases/
-    ├── CreateProduct.py        # Caso de uso: crear producto
-    ├── GetAllProduct.py        # Caso de uso: listar productos
-    ├── GetProductById.py       # Caso de uso: consultar por ID
-    ├── UpdateProduct.py        # Caso de uso: actualizar producto
-    ├── DeleteProduct.py        # Caso de uso: eliminar producto
-    └── RegisterUser.py         # Caso de uso: registrar usuario
+├── backend/
+│   ├── main.py                     # Configuración de FastAPI, lifespan, CORS y handlers globales
+│   ├── .env                        # Variables de entorno (NO versionado)
+│   ├── ruff.toml                   # Configuración del linter
+│   ├── core/
+│   │   ├── database.py             # Motor y sesiones de SQLAlchemy/SQLModel
+│   │   ├── dependencies.py         # get_current_user: valida el JWT de las rutas protegidas
+│   │   ├── exceptions.py           # Excepciones y handlers globales de error
+│   │   ├── rate_limit.py           # Limitador de peticiones (slowapi)
+│   │   └── security.py             # Hash Argon2 y creación/verificación de tokens JWT
+│   ├── models/
+│   │   ├── Product.py              # DTOs y modelo de tabla de productos (SQLModel)
+│   │   └── User.py                 # DTOs y modelo de tabla de usuarios (SQLModel)
+│   ├── repository/
+│   │   ├── base_repository.py      # Repositorio base
+│   │   ├── product_repository.py   # Acceso a datos de productos (Repository Pattern)
+│   │   └── user_repository.py      # Acceso a datos de usuarios (Repository Pattern)
+│   ├── router/
+│   │   ├── auth.py                 # Endpoints de registro y login
+│   │   └── products.py             # Endpoints REST de productos
+│   ├── services/
+│   │   ├── ai_services.py          # Integración con Google Gemini (clasificación)
+│   │   └── pricing.py              # Motor de precios (Strategy Pattern)
+│   └── use_cases/
+│       ├── CreateProduct.py        # Caso de uso: crear producto
+│       ├── GetAllProduct.py        # Caso de uso: listar productos
+│       ├── GetGroductId.py         # Caso de uso: consultar por ID
+│       ├── UpdateProduct.py        # Caso de uso: actualizar producto
+│       ├── DeleteProduct.py        # Caso de uso: eliminar producto
+│       └── RegisterUser.py         # Caso de uso: registrar usuario
+└── frontend/                       # React 19 + Vite + Tailwind (de momento solo el login)
+    └── src/
+        ├── api/client.js           # Llamadas a la API
+        ├── pages/LoginPage.jsx     # Página de login
+        ├── App.jsx
+        └── main.jsx
 ```
-
-> *Nota: la estructura muestra las responsabilidades de diseño; los nombres y archivos pueden variar ligeramente según la versión.*
 
 ---
 
@@ -276,11 +291,15 @@ smart_product_app/
 
 **IA**
 
-`Google Gemini` · `google-genai` · `google-generativeai`
+`Google Gemini` · `google-genai`
 
 **Configuración y utilidades**
 
-`python-dotenv` · `CORS` · `OAuth2`
+`python-dotenv` · `CORS` · `OAuth2` · `slowapi`
+
+**Frontend**
+
+`React 19` · `Vite` · `Tailwind CSS 3`
 
 **Arquitectura**
 

@@ -11,6 +11,15 @@ SECRET_KEY = os.getenv("SECRET_KEY")
 ALGORITHM = os.getenv("ALGORITHM")
 ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES"))
 
+# Solo algoritmos HMAC: firmamos y verificamos con la misma SECRET_KEY
+ALLOWED_ALGORITHMS = {"HS256", "HS384", "HS512"}
+
+if not SECRET_KEY:
+    raise ValueError("ERROR CRÍTICO: La variable de entorno SECRET_KEY no está configurada en el archivo .env")
+
+if ALGORITHM not in ALLOWED_ALGORITHMS:
+    raise ValueError(f"ERROR CRÍTICO: La variable de entorno ALGORITHM debe ser uno de {sorted(ALLOWED_ALGORITHMS)}")
+
 
 password_hasher = PasswordHash([Argon2Hasher()],)
 
@@ -35,3 +44,14 @@ def create_access_token(data: dict, expires_delta: timedelta | None = None):
     token = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
 
     return token
+
+
+def decode_access_token(token: str) -> dict:
+    """Verifica firma y caducidad del token y devuelve su payload.
+    Lanza jwt.ExpiredSignatureError o jwt.InvalidTokenError si no es válido."""
+    return jwt.decode(
+        token,
+        SECRET_KEY,
+        algorithms=[ALGORITHM],
+        options={"require": ["exp", "sub"]},
+    )

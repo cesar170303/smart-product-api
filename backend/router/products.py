@@ -8,10 +8,9 @@ from use_cases.GetGroductId import get_product_id
 from use_cases.DeleteProduct import delete_product
 from use_cases.UpdateProduct import update_products
 from repository.product_repository import ProductRepository
-from fastapi.security import OAuth2PasswordBearer
+from core.dependencies import get_current_user
+from models.User import UserModel
 
-
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
 
 router = APIRouter(tags=["Products"])
 
@@ -35,7 +34,7 @@ def get_product_by_id(product_id: int ,session: Session = Depends(get_session)):
 
 
 @router.post("/products")
-def add_products(new_product: ProductCreate, session: Session = Depends(get_session), token: str = Depends(oauth2_scheme)):
+def add_products(new_product: ProductCreate, session: Session = Depends(get_session), current_user: UserModel = Depends(get_current_user)):
 
     repo = ProductRepository(session)
     db_product = create_new_product(repo, new_product)
@@ -45,7 +44,7 @@ def add_products(new_product: ProductCreate, session: Session = Depends(get_sess
 
 
 @router.delete("/products/{product_id}")
-def delete_products(product_id : int, session: Session = Depends(get_session), token: str = Depends(oauth2_scheme)):
+def delete_products(product_id : int, session: Session = Depends(get_session), current_user: UserModel = Depends(get_current_user)):
     
     repo = ProductRepository(session)
     product_found = delete_product(repo, product_id)
@@ -54,7 +53,7 @@ def delete_products(product_id : int, session: Session = Depends(get_session), t
 
 
 @router.put("/products/{product_id}")
-def update_product(product : ProductCreate, product_id : int, session: Session = Depends(get_session), token: str = Depends(oauth2_scheme)):
+def update_product(product : ProductCreate, product_id : int, session: Session = Depends(get_session), current_user: UserModel = Depends(get_current_user)):
 
     repo = ProductRepository(session)
     product_found = update_products(repo, product, product_id)

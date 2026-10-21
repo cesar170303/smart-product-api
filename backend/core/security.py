@@ -9,7 +9,7 @@ load_dotenv()
 
 SECRET_KEY = os.getenv("SECRET_KEY")
 ALGORITHM = os.getenv("ALGORITHM")
-ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES"))
+EXPIRE_MINUTES_RAW = os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", "30")
 
 # Solo algoritmos HMAC: firmamos y verificamos con la misma SECRET_KEY
 ALLOWED_ALGORITHMS = {"HS256", "HS384", "HS512"}
@@ -19,6 +19,15 @@ if not SECRET_KEY:
 
 if ALGORITHM not in ALLOWED_ALGORITHMS:
     raise ValueError(f"ERROR CRÍTICO: La variable de entorno ALGORITHM debe ser uno de {sorted(ALLOWED_ALGORITHMS)}")
+
+# Si falta usamos 30 minutos; si viene, tiene que ser un entero positivo
+try:
+    ACCESS_TOKEN_EXPIRE_MINUTES = int(EXPIRE_MINUTES_RAW)
+except ValueError:
+    raise ValueError(f"ERROR CRÍTICO: ACCESS_TOKEN_EXPIRE_MINUTES debe ser un número entero de minutos (valor actual: '{EXPIRE_MINUTES_RAW}')") from None
+
+if ACCESS_TOKEN_EXPIRE_MINUTES <= 0:
+    raise ValueError("ERROR CRÍTICO: ACCESS_TOKEN_EXPIRE_MINUTES debe ser mayor que 0")
 
 
 password_hasher = PasswordHash([Argon2Hasher()],)

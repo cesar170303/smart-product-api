@@ -3,7 +3,7 @@ from core.security import create_access_token, verify_password
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlmodel import Session
-from models.User import UserCreate
+from models.User import UserCreate, UserRegisterResponse
 from repository.user_repository import UserRepository
 from use_cases.RegisterUser import register_user
 
@@ -25,9 +25,9 @@ def login(form_data: OAuth2PasswordRequestForm = Depends(), session: Session = D
 
 
 
-@router.post("/register")
+@router.post("/register", response_model=UserRegisterResponse, status_code=status.HTTP_201_CREATED)
 def register_users(user: UserCreate, session: Session = Depends(get_session)):
 
     repo = UserRepository(session)
     db_user = register_user(repository=repo, user_data=user)
-    return {"mensaje": "Usuario registrado correctamente", "Usuario": db_user}
+    return {"mensaje": "Usuario registrado correctamente", "usuario": db_user}

@@ -12,3 +12,12 @@ class UserModel(UserBase, table=True):
 
 class UserCreate(UserBase):
     password: str = Field(min_length=6)
+
+
+class UserPublic(UserBase):
+    id: int
+
+
+class UserRegisterResponse(SQLModel):
+    mensaje: str
+    usuario: UserPublic

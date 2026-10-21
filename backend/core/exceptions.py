@@ -2,6 +2,7 @@ from fastapi import Request
 from fastapi.responses import JSONResponse
 from fastapi.exceptions import RequestValidationError
 from starlette.exceptions import HTTPException as StarletteHTTPException
+from slowapi.errors import RateLimitExceeded
 
 class ProductNotFoundException(Exception):
     def __init__(self, product_id: int):
@@ -30,6 +31,14 @@ async def Starlette_exception_handler(request: Request, exc: StarletteHTTPExcept
             status_code = exc.status_code,
             content =  {"mensaje": exc.detail},
             headers = exc.headers
+        )
+
+
+async def rate_limit_exceeded_handler(request: Request, exc: RateLimitExceeded):
+    return JSONResponse(
+            status_code = 429,
+            content =  {"mensaje": "Demasiadas peticiones. Inténtalo de nuevo en un minuto"},
+            headers = {"Retry-After": "60"}
         )
 
 

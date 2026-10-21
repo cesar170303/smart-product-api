@@ -48,7 +48,7 @@ def add_products(request: Request, new_product: ProductCreate, session: Session 
     repo = ProductRepository(session)
     db_product = create_new_product(repo, new_product)
 
-    return {"mensaje": "Producto añadido correctamente", "Producto" : db_product.name}
+    return {"mensaje": "Producto añadido correctamente", "producto": db_product.name}
 
 
 
@@ -68,5 +68,5 @@ def update_product(request: Request, product : ProductCreate, product_id : int, 
 
     repo = ProductRepository(session)
     product_found = update_products(repo, product, product_id)
-    return {"mensaje": f"El producto {product_found.name} ha sido actualizado correctamente", "Producto": product_found.model_dump()}
+    return {"mensaje": f"El producto {product_found.name} ha sido actualizado correctamente", "producto": product_found.model_dump()}
 

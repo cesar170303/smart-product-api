@@ -6,6 +6,7 @@ const MAX_IMAGE_MB = 5;
 const BYTES_PER_MB = 1048576;
 const MAX_IMAGE_BYTES = MAX_IMAGE_MB * BYTES_PER_MB;
 const HTTP_UNAUTHORIZED = 401;
+const PREVIEW_MAX_WIDTH = 320;
 
 const inputClass = 'w-full bg-slate-800 p-3 rounded-xl border border-slate-700';
 
@@ -15,23 +16,43 @@ export default function ProductForm({ token, onCreated, onUnauthorized }) {
   const [price, setPrice] = useState('');
   const [category, setCategory] = useState('');
   const [file, setFile] = useState(null);
-  const [preview, setPreview] = useState('');
   const [error, setError] = useState('');
   const [sending, setSending] = useState(false);
   // Un <input type="file"> no se puede vaciar desde React; cambiando su "key" se vuelve a crear en blanco
   const [fileInputKey, setFileInputKey] = useState(0);
-  const previewRef = useRef('');
+  const previewCanvasRef = useRef(null);
 
-  // Al desmontar el formulario se libera la memoria de la vista previa
-  useEffect(() => () => {
-    if (previewRef.current) URL.revokeObjectURL(previewRef.current);
-  }, []);
+  // La vista previa se dibuja en un <canvas> a partir del archivo, sin crear ninguna URL que se inserte en el HTML.
+  // Si el navegador no puede decodificarlo, no es una foto de verdad y se descarta antes de subirlo.
+  useEffect(() => {
+    if (!file) return undefined;
 
-  const replacePreview = (newPreview) => {
-    if (previewRef.current) URL.revokeObjectURL(previewRef.current);
-    previewRef.current = newPreview;
-    setPreview(newPreview);
-  };
+    let ignore = false;
+
+    createImageBitmap(file)
+      .then((bitmap) => {
+        const canvas = previewCanvasRef.current;
+        if (ignore || !canvas) {
+          bitmap.close();
+          return;
+        }
+        const scale = Math.min(1, PREVIEW_MAX_WIDTH / bitmap.width);
+        canvas.width = Math.round(bitmap.width * scale);
+        canvas.height = Math.round(bitmap.height * scale);
+        canvas.getContext('2d').drawImage(bitmap, 0, 0, canvas.width, canvas.height);
+        bitmap.close();
+      })
+      .catch(() => {
+        if (ignore) return;
+        setError('Ese archivo no se puede mostrar como imagen. Elige otra foto.');
+        setFile(null);
+        setFileInputKey((key) => key + 1);
+      });
+
+    return () => {
+      ignore = true;
+    };
+  }, [file]);
 
   const handleFileChange = (event) => {
     const selected = event.target.files[0];
@@ -39,28 +60,17 @@ export default function ProductForm({ token, onCreated, onUnauthorized }) {
 
     if (!selected) {
       setFile(null);
-      replacePreview('');
       return;
     }
 
     if (selected.size > MAX_IMAGE_BYTES) {
       setError(`La imagen no puede superar ${MAX_IMAGE_MB} MB`);
-      event.target.value = '';
       setFile(null);
-      replacePreview('');
+      setFileInputKey((key) => key + 1);
       return;
     }
 
     setFile(selected);
-    replacePreview(URL.createObjectURL(selected));
-  };
-
-  // Si el navegador no puede dibujar el archivo elegido, no es una foto de verdad: se descarta antes de subirlo
-  const handlePreviewError = () => {
-    setError('Ese archivo no se puede mostrar como imagen. Elige otra foto.');
-    setFile(null);
-    replacePreview('');
-    setFileInputKey((key) => key + 1);
   };
 
   const resetForm = () => {
@@ -69,7 +79,6 @@ export default function ProductForm({ token, onCreated, onUnauthorized }) {
     setPrice('');
     setCategory('');
     setFile(null);
-    replacePreview('');
     setFileInputKey((key) => key + 1);
   };
 
@@ -127,11 +136,12 @@ export default function ProductForm({ token, onCreated, onUnauthorized }) {
       <label className="flex flex-col gap-2 text-sm text-slate-300">
         Foto del producto (JPG, PNG o WEBP, máx. 5 MB)
         <input key={fileInputKey} type="file" accept="image/jpeg,image/png,image/webp" onChange={handleFileChange}
-          className="file:mr-3file:rounded-lg file:border-0 file:bg-sky-500 file:px-4 file:py-2 file:font-bold file:text-white hover:file:bg-sky-700" />
+          className="file:mr-3 file:rounded-lg file:border-0 file:bg-sky-500 file:px-4 file:py-2 file:font-bold file:text-white hover:file:bg-sky-700" />
       </label>
 
-      {preview && (
-        <img src={preview} alt="Vista previa de la foto elegida" onError={handlePreviewError} className="w-full max-w-xs aspect-[4/3] object-cover rounded-xl border border-slate-700" />
+      {file && (
+        <canvas ref={previewCanvasRef} role="img" aria-label="Vista previa de la foto elegida"
+          className="max-w-xs rounded-xl border border-slate-700" />
       )}
 
       {error && <p role="alert" className="text-red-400 text-sm">{error}</p>}

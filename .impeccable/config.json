@@ -1,0 +1,152 @@
+{
+  "detector": {
+    "ignoreRules": [],
+    "ignoreFiles": [],
+    "ignoreValues": [
+      {
+        "rule": "ai-color-palette",
+        "value": "*",
+        "files": [
+          ".impeccable/mocks/decision/assigned.html"
+        ],
+        "createdAt": "2026-10-23T10:04:04.536Z",
+        "reason": "César pinned violet #8B5CF6 as the accent in the brief (user confirmed); flat ink, no gradient; throwaway decision sketch"
+      },
+      {
+        "rule": "overused-font",
+        "value": "inter",
+        "files": [
+          ".impeccable/mocks/decision/canon.html"
+        ],
+        "createdAt": "2026-10-23T10:04:04.602Z",
+        "reason": "Decision sketch of the category-standard card, which is Inter by definition; my decision, not the app's typography"
+      },
+      {
+        "rule": "design-system-font",
+        "value": "*",
+        "files": [
+          ".impeccable/mocks/decision/assigned.html"
+        ],
+        "createdAt": "2026-10-23T10:07:33.476Z",
+        "reason": "Throwaway decision sketch for the visual-direction round; uses its own world's fonts, not the app's. Decided by Claude, not user-confirmed"
+      },
+      {
+        "rule": "design-system-font",
+        "value": "*",
+        "files": [
+          ".impeccable/mocks/decision/challenger-streaming.html"
+        ],
+        "createdAt": "2026-10-23T10:07:33.554Z",
+        "reason": "Throwaway decision sketch for the visual-direction round; uses its own world's fonts, not the app's. Decided by Claude, not user-confirmed"
+      },
+      {
+        "rule": "design-system-font",
+        "value": "*",
+        "files": [
+          ".impeccable/mocks/decision/challenger-boarding.html"
+        ],
+        "createdAt": "2026-10-23T10:07:33.640Z",
+        "reason": "Throwaway decision sketch for the visual-direction round; uses its own world's fonts, not the app's. Decided by Claude, not user-confirmed"
+      },
+      {
+        "rule": "design-system-font",
+        "value": "*",
+        "files": [
+          ".impeccable/mocks/decision/canon.html"
+        ],
+        "createdAt": "2026-10-23T10:07:33.728Z",
+        "reason": "Throwaway decision sketch for the visual-direction round; uses its own world's fonts, not the app's. Decided by Claude, not user-confirmed"
+      },
+      {
+        "rule": "design-system-color",
+        "value": "*",
+        "files": [
+          ".impeccable/mocks/decision/assigned.html"
+        ],
+        "createdAt": "2026-10-23T10:07:52.752Z",
+        "reason": "Throwaway decision sketch (not shipped, not the app's design); decided by Claude, not user-confirmed"
+      },
+      {
+        "rule": "design-system-color",
+        "value": "*",
+        "files": [
+          ".impeccable/mocks/decision/canon.html"
+        ],
+        "createdAt": "2026-10-23T10:07:52.794Z",
+        "reason": "Throwaway decision sketch (not shipped, not the app's design); decided by Claude, not user-confirmed"
+      },
+      {
+        "rule": "design-system-color",
+        "value": "*",
+        "files": [
+          ".impeccable/mocks/decision/challenger-boarding.html"
+        ],
+        "createdAt": "2026-10-23T10:07:52.837Z",
+        "reason": "Throwaway decision sketch (not shipped, not the app's design); decided by Claude, not user-confirmed"
+      },
+      {
+        "rule": "design-system-color",
+        "value": "*",
+        "files": [
+          ".impeccable/mocks/decision/challenger-streaming.html"
+        ],
+        "createdAt": "2026-10-23T10:07:52.879Z",
+        "reason": "Throwaway decision sketch (not shipped, not the app's design); decided by Claude, not user-confirmed"
+      },
+      {
+        "rule": "design-system-font-size",
+        "value": "*",
+        "files": [
+          ".impeccable/mocks/decision/canon.html"
+        ],
+        "createdAt": "2026-10-23T10:07:52.921Z",
+        "reason": "Throwaway decision sketch (not shipped, not the app's design); decided by Claude, not user-confirmed"
+      },
+      {
+        "rule": "design-system-radius",
+        "value": "*",
+        "files": [
+          ".impeccable/mocks/decision/assigned.html"
+        ],
+        "createdAt": "2026-10-23T10:07:52.964Z",
+        "reason": "Throwaway decision sketch (not shipped, not the app's design); decided by Claude, not user-confirmed"
+      },
+      {
+        "rule": "design-system-radius",
+        "value": "*",
+        "files": [
+          ".impeccable/mocks/decision/challenger-streaming.html"
+        ],
+        "createdAt": "2026-10-23T10:07:53.008Z",
+        "reason": "Throwaway decision sketch (not shipped, not the app's design); decided by Claude, not user-confirmed"
+      },
+      {
+        "rule": "low-contrast",
+        "value": "*",
+        "files": [
+          ".impeccable/mocks/decision/canon.html"
+        ],
+        "createdAt": "2026-10-23T10:07:53.049Z",
+        "reason": "Throwaway decision sketch (not shipped, not the app's design); decided by Claude, not user-confirmed"
+      },
+      {
+        "rule": "low-contrast",
+        "value": "*",
+        "files": [
+          ".impeccable/mocks/decision/challenger-boarding.html"
+        ],
+        "createdAt": "2026-10-23T10:07:53.092Z",
+        "reason": "Throwaway decision sketch (not shipped, not the app's design); decided by Claude, not user-confirmed"
+      },
+      {
+        "rule": "low-contrast",
+        "value": "*",
+        "files": [
+          ".impeccable/mocks/decision/challenger-streaming.html"
+        ],
+        "createdAt": "2026-10-23T10:07:53.135Z",
+        "reason": "Throwaway decision sketch (not shipped, not the app's design); decided by Claude, not user-confirmed"
+      }
+    ]
+  }
+}

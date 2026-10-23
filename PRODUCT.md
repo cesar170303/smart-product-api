@@ -6,64 +6,67 @@
 
 web
 
+## Stack
+
+React 19 + TypeScript + Tailwind CSS (decidido por César). Vite como bundler. Frontend y backend conviven en la misma carpeta (`frontend/` y `backend/`). Por ahora solo escritorio: no hace falta diseño responsive para móvil.
+
 ## Users
 
-- **Uso real previsto:** el dueño o los empleados de una tienda que gestionan su catálogo de productos en el día a día: dar de alta artículos, corregirlos y retirarlos.
-- **Uso actual:** proyecto de portfolio / máster de César. Hoy quien lo usa es alguien que lo evalúa en una demo (reclutador, tribunal), así que tiene que funcionar y entenderse de punta a punta sin explicaciones.
-- Se construye como si fuera para la tienda real; la demo no justifica atajos que una tienda real no aceptaría.
+- **Público objetivo:** gente joven que compra y vende objetos de segunda mano entre particulares (estilo Wallapop): ropa, tecnología, muebles, deporte.
+- **Quien visita sin cuenta:** puede ver el listado y las fichas de producto. Se le pide iniciar sesión o registrarse solo al comprar, chatear con el vendedor o subir un producto.
+- **Quien vende:** sube anuncios, los ve en "Mis ventas" y avanza su estado hasta cerrar la venta.
+- **Uso actual:** proyecto de portfolio / máster de César; quien lo evalúa en una demo tiene que entenderlo de punta a punta sin explicaciones. Se construye como un marketplace real.
 
 ## Product Purpose
 
-Quitar dos tareas manuales y propensas a errores al gestionar un catálogo:
+Que dos particulares se pongan de acuerdo y cierren una compraventa sin fricción: el vendedor sube un artículo en un minuto, el comprador lo encuentra, lo reserva y habla con el vendedor, y ambos ven en qué punto está la venta.
 
-1. **Clasificar productos**: si no se indica categoría, Gemini la infiere a partir del nombre.
-2. **Calcular el precio final**: se aplica la regla de precios de la categoría (IVA, descuentos, márgenes) de forma consistente.
-
-Éxito: el usuario escribe nombre y precio, guarda, y obtiene un producto categorizado y con su precio final correcto, sin pensar en reglas.
+Éxito: un anuncio subido aparece en el listado, se puede comprar, pasa a "Pendiente de envío" y el vendedor lo cierra como "Vendido", con todo el estado visible en pantalla.
 
 ## Positioning
 
-Una sola acción de guardado hace las dos cosas: la IA pone la categoría y el motor de precios (patrón Strategy, una regla por categoría) calcula el precio final. Un CRUD de inventario genérico no hace ninguna de las dos.
+Dos cosas que un marketplace de segunda mano genérico no hace:
+
+1. **La IA pone la categoría.** Si el vendedor deja la categoría vacía al subir, Gemini la asigna (si falla, queda "General" y el anuncio se guarda igual).
+2. **Estados claros de la venta.** Cada artículo pasa por En venta → Pendiente de envío → Vendido, y el vendedor lo gestiona desde "Mis ventas".
 
 ## Operating Context
 
-- Superficie de frontend acordada: **panel de gestión** privado tras el login (crear, editar, borrar productos; ver la categoría asignada y el precio final). Hoy solo existe la página de login (`frontend/src/pages/LoginPage.jsx`).
-- No hay otras superficies decididas: ni catálogo público ni pantalla de registro en el frontend, aunque la API tenga `GET /products` público y `POST /register`.
-- Flujo de autenticación: `POST /login` (OAuth2 password form) devuelve un JWT; las escrituras en `/products` piden `Authorization: Bearer`.
+- Autenticación: `POST /login` (OAuth2 password form, el campo `username` lleva el email) devuelve un JWT; `POST /register` recibe JSON con `name`, `email`, `password` (mín. 8) y `location` opcional.
+- Compra: `POST /orders` con `product_id` crea un pedido pendiente (el producto pasa a reservado). El vendedor lo completa (producto vendido) o cualquiera de las dos partes lo cancela (el producto vuelve a estar disponible). Completado y cancelado son finales.
+- Correspondencia de estados en pantalla: `available` = **En venta**, `reserved` (pedido pendiente) = **Pendiente de envío**, `sold` = **Vendido**.
 
 ## Capabilities and Constraints
 
-- **API** (FastAPI, `http://localhost:8000`): `POST /register`, `POST /login`, `GET /products`, `GET /products/{id}`, `POST/PUT/DELETE /products` (con token).
-- **Producto**: `name` (mín. 3 caracteres), `price` (> 0), `category` (texto libre). La respuesta pública (`ProductPublic`) no incluye `provider_secret_cost`, y la UI tampoco debe mostrarlo.
-- **Precio**: el `price` guardado y devuelto ya es el precio final tras aplicar la regla; el precio base no se conserva por separado.
-- **Reglas de precio** (`backend/services/pricing.py`): Tecnología +21 % IVA · Deporte −10 % · Ofertas −5 € con mínimo 1 € · Premium +25 % · cualquier otra categoría (incluida General) sin cambios. Las categorías se comparan sin acentos y en minúsculas.
-- **Categoría por IA**: la IA puede devolver cualquier palabra (Lácteos, Limpieza…), no solo las cinco con regla. Si Gemini falla o responde algo inútil, se usa `General`.
-- **Límite de peticiones**: los endpoints de `/products` comparten 5 peticiones por minuto por IP (`429` con mensaje en español).
-- **Errores**: JSON en español con clave `mensaje` (y `detalles` en los 422).
-- **Frontend**: React 19 + Vite + Tailwind CSS 3. `API_BASE_URL` está hardcodeada en `frontend/src/api/client.js`. CORS solo admite `localhost:5173` / `127.0.0.1:5173`.
-- **Sin decidir**: despliegue, roles de usuario (hoy cualquier usuario autenticado puede escribir), y si el precio base debería guardarse.
+- **API** (FastAPI, `http://localhost:8000`, configurable con `VITE_API_URL`): `POST /register`, `POST /login`, `GET /products`, `GET /products/{id}` (públicos), `POST/PUT/DELETE /products` (con token), `POST /uploads` (foto), `GET /orders`, `GET /orders/{id}`, `POST /orders`, `PATCH /orders/{id}/status` (todos con token). Las fotos se sirven en `/media/<archivo>`.
+- **Producto** (`ProductRead`): `id`, `name`, `description`, `price`, `image_url` (una sola foto), `status`, `created_at`, `category {…}`, `seller {id, name, location}`. Para crear: `name` (mín. 3), `description`, `price` (> 0), `image_url` (la ruta que devuelve `/uploads`), `category` opcional.
+- **Pedido** (`OrderRead`): `id`, `buyer_id`, `status` (`pending`/`completed`/`cancelled`), `created_at`, `product`. `GET /orders` devuelve los pedidos en los que participas (como comprador o vendedor).
+- **No existe todavía en el backend:** buscador (`?q=`; se filtra en el cliente), endpoint de "mi usuario" (el id sale del claim `sub` del JWT), varias fotos por producto, valoraciones o número de ventas del vendedor, y **chat** (hay que construirlo en el backend antes de la pantalla 6).
+- **Límite de peticiones:** `/products` 30/min por IP, `/orders` 20/min, `/login` 5/min (`429` con mensaje en español).
+- **Errores:** JSON en español con clave `mensaje` (y `detalles` en los 422).
+- CORS solo admite `localhost:5173` y `127.0.0.1:5173`.
 
 ## Brand Commitments
 
-- Nombre del proyecto: **Smart Product** (README: "Smart Product API").
-- Toda la interfaz va en **español**, con el mismo registro que los mensajes de la API.
-- Moneda **euro (€)** y formato numérico español.
-- No hay logo, marca visual ni voz definida más allá de esto.
+- Nombre de la marca: **Kambio** (el Figma de referencia usa "Smart Product" como logotipo provisional; el nombre del repositorio y de la API sigue siendo Smart Product).
+- Toda la interfaz va en **español**, con el mismo registro que los mensajes de la API. Moneda **euro (€)** y formato numérico español.
+- Restricciones visuales que César fijó expresamente: **modo oscuro** (fondo casi negro o gris muy oscuro), **violeta eléctrico `#8B5CF6`** como acento (botones, enlaces, etiquetas de estado), sensación **moderna y fresca**. Quiere personalidad propia y evitar el aspecto genérico de IA. El Figma (`ZrK4ZfeWoe8ljJFfVqSbbf`, opción violeta y ficha de producto) es referencia de **estructura**, no de diseño final.
 
 ## Evidence on Hand
 
-- README con la descripción funcional, endpoints y tabla de reglas de precio (`README.md`).
-- No hay datos reales de productos, capturas, testimonios, clientes ni métricas. No inventarlos: los ejemplos de demo deben presentarse como ejemplos.
-- `frontend/src/assets/hero.png`, `react.svg`, `vite.svg` y `components/Counter.jsx` son restos de la plantilla de Vite, no material de marca.
+- Figma de referencia: cabecera (logotipo, buscador, "+ Subir producto"), rejilla de tarjetas (foto, precio, nombre, etiqueta de estado) y ficha de producto (galería, estado, precio, título, ubicación y antigüedad, descripción, Comprar, Chatear, vendedor).
+- Los datos del Figma (Bicicleta urbana, iPhone 12, "Laura M. ★ 4,8 · 23 ventas") son ejemplos de maqueta, no datos reales. No hay valoraciones reales: no inventarlas en la interfaz.
+- Existe un frontend previo en JavaScript (`frontend/src/pages/LoginPage.jsx`, `RegisterPage.jsx`, `ProductsPage.jsx`, `components/ProductForm.jsx`) con estilo provisional; se sustituye pantalla a pantalla, pasando a TypeScript.
+- No hay logotipo ni fotos de marca. Los ejemplos de demo se presentan como ejemplos.
 
 ## Product Principles
 
-1. **La IA y el motor de precios se ven.** El usuario debe saber qué categoría se asignó (y si la puso la IA o él) y qué regla dio el precio final.
-2. **Tienda real primero, demo después.** Cada pantalla tiene que aguantar el uso diario; si funciona para la tienda, funciona para la demo.
-3. **Los fallos no bloquean.** Si la IA falla se guarda con `General`; si la API devuelve 401, 404, 422 o 429, la UI explica qué pasó en español y qué hacer.
-4. **Nada interno a la vista.** Lo que la API no expone (`provider_secret_cost`, hashes) tampoco aparece en la interfaz.
+1. **El estado de la venta siempre se ve.** En listado, ficha y "Mis ventas", el estado (En venta, Pendiente de envío, Vendido) es información de primer nivel, no un detalle.
+2. **Mirar es libre; actuar pide cuenta.** Nadie necesita cuenta para ver; el login aparece justo al comprar, chatear o subir, y devuelve a la persona a lo que estaba haciendo.
+3. **Nada se inventa.** Si el backend no lo da (valoraciones, ventas del vendedor, varias fotos), la interfaz no lo aparenta.
+4. **Los fallos no bloquean.** Si la IA falla se guarda como "General"; los errores 401, 404, 409, 422 y 429 se explican en español y dicen qué hacer.
 
 ## Accessibility & Inclusion
 
-- Objetivo: **WCAG AA** (se asume la versión 2.2 mientras no se diga otra; contraste, uso completo con teclado, etiquetas para lectores de pantalla, mensajes de error asociados a sus campos).
-- El panel de gestión tiene que ser **usable en móvil**, no solo en escritorio.
+- Objetivo: **WCAG AA** (contraste en modo oscuro, uso completo con teclado, etiquetas para lectores de pantalla, errores asociados a sus campos, foco visible).
+- Por ahora **solo escritorio**; el uso en móvil queda fuera del alcance actual.

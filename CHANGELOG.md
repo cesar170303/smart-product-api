@@ -28,7 +28,7 @@ La versión del proyecto vive en [`frontend/package.json`](frontend/package.json
 - Páginas nuevas: listado, detalle de producto, entrar y crear cuenta, subida de producto con vista previa, Mis ventas y chat; más `RequireAuth` y contexto de autenticación.
 - Tests con Vitest para páginas y componentes; `npm run typecheck` y `build` con `tsc --noEmit`.
 - Se eliminan `autoprefixer` y `postcss` (Tailwind 4 ya no los necesita).
-- **El precio publicado es el que escribe el vendedor**: `POST`/`PUT /products` ya no recalculan el precio según la categoría (IVA, descuentos, márgenes). `services/pricing.py` se conserva como ejemplo del patrón *Strategy*, pero ningún endpoint lo usa.
+- **El precio publicado es el que escribe el vendedor**: `POST`/`PUT /products` ya no recalculan el precio según la categoría (IVA, descuentos, márgenes). El motor de precios (`services/pricing.py`) se eliminó después, al no usarlo ningún endpoint.
 - `GET /products` admite `?seller_id=` para pedir solo los anuncios de un vendedor (Mis ventas y el recuento de la ficha ya no descargan todo el catálogo).
 - Límites de peticiones: las lecturas de `/products` tienen su propio contador (120/min por IP); las escrituras siguen en 30/min.
 

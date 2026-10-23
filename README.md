@@ -2,7 +2,7 @@
 
 > Backend para la gestión inteligente de inventario en una tienda.
 
-Una **API RESTful** construida con **FastAPI** que automatiza el ciclo de vida del catálogo de productos: los clasifica automáticamente mediante **IA generativa (Google Gemini)** y aplica un **motor de precios dinámico** basado en reglas de negocio por categoría. Incluye autenticación segura con **JWT** y **Argon2**.
+Una **API RESTful** construida con **FastAPI** que automatiza el ciclo de vida del catálogo de productos: los clasifica automáticamente mediante **IA generativa (Google Gemini)**. Incluye autenticación segura con **JWT** y **Argon2**.
 
 ---
 
@@ -11,12 +11,11 @@ Una **API RESTful** construida con **FastAPI** que automatiza el ciclo de vida d
 En una tienda, dos tareas manuales consumen demasiado tiempo y son propensas a errores:
 
 1. **Clasificar productos.** Asignar manualmente la categoría de cada artículo (Tecnología, Deporte, Ofertas, etc.).
-2. **Calcular precios finales.** Aplicar IVA, descuentos o márgenes según la categoría, manteniendo reglas consistentes.
 
-Esta API **elimina esa fricción**: recibe el nombre y precio base de un producto y, en tiempo real:
+Esta API **elimina esa fricción**: recibe el nombre y precio de un producto y, en tiempo real:
 
 - **Infiere la categoría** con IA si no se proporciona una.
-- **Guarda el precio tal cual lo indica el vendedor** (el motor de precios `services/pricing.py` ya no se aplica al crear ni al actualizar: entre particulares no se suma IVA ni se descuenta por categoría).
+- **Guarda el precio tal cual lo indica el vendedor.** Ninguna categoría altera el precio.
 - **Persiste y expone** los datos a través de endpoints REST documentados con Swagger.
 
 ---
@@ -26,7 +25,6 @@ Esta API **elimina esa fricción**: recibe el nombre y precio base de un product
 - **CRUD completo de productos** — crear, consultar, actualizar y eliminar vía REST.
 - **Autenticación con JWT + Argon2** — registro de usuarios (`/register`) e inicio de sesión (`/login`) para proteger las operaciones de escritura.
 - **Clasificación automática con IA** — integración con Google Gemini (`gemini-3.5-flash`); si el cliente no envía categoría, la IA la infiere a partir del nombre.
-- **Motor de precios (patrón *Strategy*)** — IVA, descuentos y márgenes por categoría en `services/pricing.py`. Sigue en el repositorio como ejemplo del patrón, pero **no se aplica**: el precio publicado es el que escribe el vendedor.
 - **Persistencia en PostgreSQL** — mediante **SQLModel** (SQLAlchemy 2.0).
 - **Validación estricta de datos** — DTOs con Pydantic v2 y `Field(min_length=...)` / `Field(gt=0)`.
 - **Manejo global de excepciones** — respuestas JSON uniformes en español para errores (422, 404, 500, etc.).
@@ -43,7 +41,7 @@ El proyecto sigue una **arquitectura en capas** orientada a la mantenibilidad y 
 | **Presentación / Transporte** | `router/` | Define los endpoints HTTP y delega en los casos de uso. |
 | **Lógica de negocio** | `use_cases/` | Orquesta las reglas de negocio (CRUD y autenticación). |
 | **Persistencia** | `repository/` | Aísla el acceso a datos del resto de la aplicación. |
-| **Servicios** | `services/` | Lógica reutilizable: motor de precios y cliente de IA. |
+| **Servicios** | `services/` | Lógica reutilizable: cliente de IA y guardado de fotos. |
 | **Modelos** | `models/` | DTOs y tablas (SQLModel) con validación Pydantic. |
 | **Infraestructura** | `core/` | Conexión a BD, seguridad (JWT/Argon2) y manejo de errores. |
 
@@ -51,9 +49,7 @@ El proyecto sigue una **arquitectura en capas** orientada a la mantenibilidad y 
 
 - **Repository Pattern** — `ProductRepository` y `UserRepository` centralizan todas las operaciones de base de datos; los casos de uso no dependen de SQLModel directamente.
 - **Use Cases** — cada operación de dominio está encapsulada en su propia función (`CreateProduct`, `GetAllProduct`, `GetProductById`, `UpdateProduct`, `DeleteProduct`, `RegisterUser`).
-- **Strategy Pattern (OCP)** — el cálculo de precios vive en `services/pricing.py`. Un diccionario estratégico (`PRICING_CALCULATORS`) asocia cada categoría con su clase de cálculo, evitando cadenas de `if/else`. Añadir una regla nueva solo requiere crear una clase y registrarla.
 - **Inyección de Dependencias** — los endpoints reciben la sesión de BD y el token JWT vía `Depends(...)`.
-- **Open/Closed Principle** — el modelo de producto expone `apply_pricing_rules()`; la lógica de precios se extiende sin tocar los endpoints.
 
 ---
 
@@ -64,24 +60,6 @@ El proyecto sigue una **arquitectura en capas** orientada a la mantenibilidad y 
 - El prompt define el rol (calificador con 15 años de experiencia), el contexto y una **restricción estricta: devolver una única palabra** como categoría.
 - Si al crear o actualizar un producto no se especifica `category`, la IA la infiere automáticamente a partir del nombre.
 - La API key se lee automáticamente de la variable de entorno `GEMINI_API_KEY`.
-
----
-
-## 💰 Motor de Precios (ya no se aplica)
-
-> **Importante:** `POST /products` y `PUT /products/{id}` guardan el precio exactamente como llega. Las reglas de abajo siguen en `services/pricing.py` como ejemplo del patrón *Strategy*, pero ningún endpoint las usa.
-
-En `services/pricing.py`, cada categoría tiene su propia estrategia:
-
-| Categoría | Estrategia | Regla |
-|-----------|-----------|-------|
-| `Tecnologia` | `IvaPricing` | +21% IVA sobre el precio base. |
-| `Deporte` | `PercentageDiscountPricing` | −10% de descuento sobre el precio base. |
-| `Ofertas` | `FixedDiscountPricing` | −5 € con precio mínimo de 1 €. |
-| `Premium` | `PremiumPricing` | +25% de margen sobre el precio base. |
-| Otras / `General` | `StandardPricing` | Precio sin modificaciones. |
-
-> Las categorías se **normalizan** (sin acentos, en minúsculas) antes de buscar su estrategia, de modo que valores como "Tecnología" o "Tecnologia" apuntan a la misma regla. Añadir una regla nueva solo requiere crear una clase y registrarla en `PRICING_CALCULATORS`.
 
 ---
 
@@ -262,8 +240,7 @@ smart_product_app/
 │   │   ├── auth.py                 # Endpoints de registro y login
 │   │   └── products.py             # Endpoints REST de productos
 │   ├── services/
-│   │   ├── ai_services.py          # Integración con Google Gemini (clasificación)
-│   │   └── pricing.py              # Motor de precios (Strategy Pattern)
+│   │   └── ai_services.py          # Integración con Google Gemini (clasificación)
 │   └── use_cases/
 │       ├── CreateProduct.py        # Caso de uso: crear producto
 │       ├── GetAllProduct.py        # Caso de uso: listar productos
@@ -305,7 +282,7 @@ smart_product_app/
 
 **Arquitectura**
 
-`Clean Architecture` · `SOLID` · `Repository Pattern` · `Strategy Pattern` · `Dependency Injection`
+`Clean Architecture` · `SOLID` · `Repository Pattern` · `Dependency Injection`
 
 ---
 

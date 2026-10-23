@@ -16,7 +16,7 @@ En una tienda, dos tareas manuales consumen demasiado tiempo y son propensas a e
 Esta API **elimina esa fricción**: recibe el nombre y precio base de un producto y, en tiempo real:
 
 - **Infiere la categoría** con IA si no se proporciona una.
-- **Calcula el precio final** aplicando la estrategia de pricing correspondiente a esa categoría.
+- **Guarda el precio tal cual lo indica el vendedor** (el motor de precios `services/pricing.py` ya no se aplica al crear ni al actualizar: entre particulares no se suma IVA ni se descuenta por categoría).
 - **Persiste y expone** los datos a través de endpoints REST documentados con Swagger.
 
 ---
@@ -26,7 +26,7 @@ Esta API **elimina esa fricción**: recibe el nombre y precio base de un product
 - **CRUD completo de productos** — crear, consultar, actualizar y eliminar vía REST.
 - **Autenticación con JWT + Argon2** — registro de usuarios (`/register`) e inicio de sesión (`/login`) para proteger las operaciones de escritura.
 - **Clasificación automática con IA** — integración con Google Gemini (`gemini-3.5-flash`); si el cliente no envía categoría, la IA la infiere a partir del nombre.
-- **Motor de precios dinámico** — IVA, descuentos y márgenes aplicados según categoría mediante el patrón *Strategy*.
+- **Motor de precios (patrón *Strategy*)** — IVA, descuentos y márgenes por categoría en `services/pricing.py`. Sigue en el repositorio como ejemplo del patrón, pero **no se aplica**: el precio publicado es el que escribe el vendedor.
 - **Persistencia en PostgreSQL** — mediante **SQLModel** (SQLAlchemy 2.0).
 - **Validación estricta de datos** — DTOs con Pydantic v2 y `Field(min_length=...)` / `Field(gt=0)`.
 - **Manejo global de excepciones** — respuestas JSON uniformes en español para errores (422, 404, 500, etc.).
@@ -67,7 +67,9 @@ El proyecto sigue una **arquitectura en capas** orientada a la mantenibilidad y 
 
 ---
 
-## 💰 Motor de Precios Dinámico
+## 💰 Motor de Precios (ya no se aplica)
+
+> **Importante:** `POST /products` y `PUT /products/{id}` guardan el precio exactamente como llega. Las reglas de abajo siguen en `services/pricing.py` como ejemplo del patrón *Strategy*, pero ningún endpoint las usa.
 
 En `services/pricing.py`, cada categoría tiene su propia estrategia:
 
@@ -88,7 +90,7 @@ En `services/pricing.py`, cada categoría tiene su propia estrategia:
 - **Registro** (`POST /register`) — las contraseñas se guardan con hash **Argon2** (`pwdlib`).
 - **Login** (`POST /login`) — valida credenciales (OAuth2 *password flow*) y devuelve un token **JWT** firmado.
 - Las operaciones de escritura sobre productos (`POST`/`PUT`/`DELETE`) requieren autenticación `Bearer`; se valida la firma, la caducidad y el usuario del token (`core/dependencies.py`).
-- **Rate limiting** con `slowapi` (`core/rate_limit.py`): los endpoints de `/products` comparten un límite de 5 peticiones por minuto por IP.
+- **Rate limiting** con `slowapi` (`core/rate_limit.py`): las lecturas de `/products` (`GET`) tienen su propio límite de 120 peticiones por minuto por IP, y las escrituras (`POST`/`PUT`/`DELETE`) comparten otro de 30 por minuto. `/login` admite 5 por minuto.
 
 Documentación    | Ruta
 -----------------|-----------------------------------
@@ -103,7 +105,7 @@ ReDoc            | `http://localhost:8000/redoc`
 |--------|------|-------------|:-------------:|-----------|
 | `POST` | `/register` | Registra un nuevo usuario. | — | `200` - confirmación |
 | `POST` | `/login` | Inicia sesión y devuelve un JWT. | — | `200` - token |
-| `GET` | `/products` | Lista todos los productos. | — | `200` - lista de `ProductPublic` |
+| `GET` | `/products` | Lista los productos; con `?seller_id=` solo los de ese vendedor. | — | `200` - lista de `ProductPublic` |
 | `GET` | `/products/{product_id}` | Obtiene un producto por su ID. | — | `200` - `ProductPublic` \| `404` |
 | `POST` | `/products` | Crea un producto (la IA infiere la categoría si es vacía). | Bearer | `200` - confirmación |
 | `PUT` | `/products/{product_id}` | Actualiza un producto existente. | Bearer | `200` - producto actualizado \| `404` |

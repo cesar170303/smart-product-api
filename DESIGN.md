@@ -295,11 +295,6 @@ components:
     textColor: "{colors.ink-dim}"
     rounded: "{rounded.control}"
     padding: "16px 20px"
-  form-note:
-    textColor: "{colors.ink-dim}"
-    typography: "{typography.label}"
-    rounded: "8px"
-    padding: "12px 16px"
   listing-preview:
     backgroundColor: "{colors.sheet}"
     textColor: "{colors.ink-dim}"
@@ -382,7 +377,7 @@ La ficha del producto es la misma imprenta en dos columnas: foto grande y descri
 
 Entrar y crear cuenta es la misma imprenta con el lema por delante: a la izquierda "Pass it, spark change." a 80 px con registro y una frase que explica por qué se pide cuenta según adónde iba la persona; a la derecha, una tarjeta de formulario de 500 px con dos pestañas en píldora que reutilizan los estados de los chips. La cabecera pierde el menú de cuenta en estas dos rutas y deja solo "← Volver al listado". El formulario valida al enviar y después en vivo, lleva el foco al primer campo inválido y, tras un login fallido, lo devuelve a la contraseña; crear cuenta entra directamente al terminar.
 
-Subir producto es la misma imprenta convertida en mesa de trabajo: a la izquierda un formulario de hasta 720 px con el título "Subir producto" a 40 px, y a la derecha una columna fija con la prueba de impresión, es decir, la tarjeta del listado tal como quedará. La vista previa reutiliza el lenguaje del listado (halftone como marca de "sin foto", precio con registro) y es honesta: mientras no hay un precio válido muestra un "— €" liso, sin plancha, porque la doble tinta solo se imprime sobre un precio real. El formulario avisa antes de publicar de que la categoría puede cambiar el precio, y tras publicar la ficha lo confirma en un aviso informativo de borde violeta.
+Subir producto es la misma imprenta convertida en mesa de trabajo: a la izquierda un formulario de hasta 720 px con el título "Subir producto" a 40 px, y a la derecha una columna fija con la prueba de impresión, es decir, la tarjeta del listado tal como quedará. La vista previa reutiliza el lenguaje del listado (halftone como marca de "sin foto", precio con registro) y es honesta: mientras no hay un precio válido muestra un "— €" liso, sin plancha, porque la doble tinta solo se imprime sobre un precio real. El precio publicado es exactamente el que se escribe, y tras publicar la ficha lo confirma en un aviso informativo de borde violeta.
 
 Mis ventas es la misma imprenta convertida en tablero de despacho: bajo el título de 40 px y una frase con datos reales ("Has vendido N artículos por X €", solo si hay ventas), tres columnas iguales, una por estado y siempre en el mismo orden: En venta, Pendiente de envío, Vendido. No son tarjetas anidadas: cada artículo es una fila separada por filetes, con miniatura, nombre, precio y una línea de datos. Lo único que pide acción es el pedido pendiente, y esa acción es final, así que se confirma en línea, dentro de la fila. Cuando un artículo cambia de columna se queda marcado con un contorno violeta hasta que el puntero o el foco lo alcanzan: el cambio permanece encendido hasta que se ha visto.
 
@@ -397,7 +392,7 @@ Mensajes es la misma imprenta convertida en mesa de correo: un único panel con 
 - Ficha en dos columnas: foto de 520 px de alto y descripción a la izquierda, panel de información a la derecha; la compra se confirma dentro del panel, sin modal.
 - Titulares y precios en Bricolage Grotesque extrapesada; el resto en Hanken Grotesk.
 - Entrar y crear cuenta: lema de 80 px con registro a la izquierda y tarjeta de formulario de 500 px a la derecha; campos de 48 px, botón de envío de 56 px con plancha.
-- Subir producto: formulario de hasta 720 px (título de 40 px) y columna fija de 340 a 400 px con la vista previa del anuncio; zona de foto arrastrable, campo de precio con "€" y aviso del precio final según la categoría.
+- Subir producto: formulario de hasta 720 px (título de 40 px) y columna fija de 340 a 400 px con la vista previa del anuncio; zona de foto arrastrable, campo de precio con "€" y ayuda fija.
 - Mis ventas: tres columnas iguales (hueco 40 px) por estado, cabecera con la etiqueta de estado, recuento de 24 px y filete de 1,5 px; filas con miniatura de 88 px separadas por filetes, no tarjetas; confirmación en línea de acciones finales; el artículo que cambia de columna queda marcado con contorno violeta hasta que se ve.
 - Mensajes: un solo panel (filete 1,5 px, esquina 16 px, Pliego) en dos zonas, bandeja de 300 a 380 px y conversación; filas separadas por filetes, no tarjetas anidadas; burbuja propia violeta con texto Papel Negro y ajena en Pliego Alto con filete, cada una con la esquina inferior de su lado plana; compositor de 2 filas con "Enviar" primario con plancha; franja ámbar de texto cuando se pierde la conexión.
 - Escritorio solamente por ahora (ancho mínimo 1100 px).
@@ -469,7 +464,7 @@ Columna central con `max-width` 1740 px, ancho mínimo 1100 px, centrada, con 48
 
 **Entrar y crear cuenta** (`/login`, `/registro`): misma columna y cabecera, sin menú de cuenta; en el hueco del buscador va "← Volver al listado". Debajo, a 24 px, rejilla de dos columnas `minmax(0,1fr) / minmax(420px,500px)`, hueco 64 px, centradas en vertical. Izquierda (máx. 640 px): lema de 80 px y, 32 px más abajo, la frase de motivo. Derecha: tarjeta de 500 px como máximo, padding 32 px; pestañas, 28 px de aire, y el formulario con 20 px entre elementos (6 px entre etiqueta, campo y mensaje; 4 px extra sobre el botón de envío).
 
-**Subir producto** (`/subir`, ruta con sesión: sin ella se pasa por el login y se vuelve): misma columna y cabecera, con "← Volver al listado" en el hueco del buscador. Debajo, 8 px de aire y rejilla `minmax(0,1fr) / minmax(340px,400px)` con hueco de 56 px, alineada arriba. Izquierda: formulario de 720 px como máximo, con 24 px entre bloques (título, foto, nombre, descripción, fila precio y categoría, nota, alerta, botón). Precio y categoría comparten fila de dos columnas con 20 px de hueco. Derecha: columna fija (`sticky`, 32 px desde arriba) con el encabezado de 20 px a 16 px de la tarjeta de vista previa y, a 12 px, la nota de 14 px.
+**Subir producto** (`/subir`, ruta con sesión: sin ella se pasa por el login y se vuelve): misma columna y cabecera, con "← Volver al listado" en el hueco del buscador. Debajo, 8 px de aire y rejilla `minmax(0,1fr) / minmax(340px,400px)` con hueco de 56 px, alineada arriba. Izquierda: formulario de 720 px como máximo, con 24 px entre bloques (título, foto, nombre, descripción, fila precio y categoría, alerta, botón). Precio y categoría comparten fila de dos columnas con 20 px de hueco. Derecha: columna fija (`sticky`, 32 px desde arriba) con el encabezado de 20 px a 16 px de la tarjeta de vista previa y, a 12 px, la nota de 14 px.
 
 **Mis ventas** (`/mis-ventas`, ruta con sesión: sin ella se pasa por el login y se vuelve): misma columna y cabecera, con "← Volver al listado" en el hueco del buscador. Debajo, 8 px de aire y una pila con 32 px entre bloques: título de 40 px (con la frase resumen a 4 px debajo) y, a continuación, rejilla de 3 columnas iguales con hueco de 40 px, alineada arriba (las columnas crecen de forma independiente). Cada columna: cabecera en fila (12 px entre elementos, alineada al centro: etiqueta de estado, recuento y, a la derecha, el total cobrado solo en Vendido) sobre filete de 1,5 px en Tinta Tenue al 50 % con 12 px de aire; debajo, la lista de filas. Fila: 16 px arriba y abajo, 16 px entre miniatura (88 px) y texto, filete de 1,5 px en Filete al pie; el texto se apila con 4 px (nombre, precio, datos) y las acciones del pedido pendiente a 8 px. Orden: lo más recientemente publicado primero. Columna vacía: una frase de 16 px en Tinta Tenue con 24 px de aire. Carga: tres columnas con un bloque de cabecera de 36 px (Pliego Alto) y tres bloques de 88 px (Pliego) con pulso. Sin ningún anuncio: panel de invitación de 576 px máximo, con filete punteado.
 
@@ -535,7 +530,7 @@ Campo etiquetado y apilado: etiqueta, campo y mensaje con 6 px entre sí.
 - **Multilínea** (`multiline`, `rows`): la descripción es un área de 5 filas con la misma superficie, borde y esquina de 10 px, padding 12 x 16 px, interlineado de 28 px y redimensionable en vertical. La ayuda lleva un contador en vivo ("93/5000"); `maxLength` es 5000.
 - **Sufijo** (`suffix`): texto fijo "€" a la derecha, a 16 px del borde, en Tinta Tenue, sin eventos y oculto a lectores de pantalla; el campo reserva 48 px de padding derecho. Se acompaña de `inputMode="decimal"` (teclado decimal).
 - **Sugerencias** (`list`): la categoría es un campo libre y opcional con `datalist` nativo; las sugerencias son las categorías que ya existen en los anuncios. Si no se pueden pedir, el campo sigue siendo libre. El desplegable lo dibuja el navegador, no el sistema.
-- **Ayuda con efecto:** la ayuda del precio pasa a decir cuánto se publicará cuando la categoría escrita tiene regla ("Con «Deporte» (−10 %) se publicará a 90 €."); si no, "En euros, por ejemplo 45 o 45,50.".
+- **Ayuda del precio:** texto fijo, "En euros, por ejemplo 45 o 45,50. Se publica tal cual lo escribes."; no cambia con la categoría.
 
 ### Form Alert
 Alerta a nivel de formulario, entre los campos y el botón de envío (la informativa va encima de los campos). Esquina 8 px, borde 1,5 px, padding 12 x 16 px, texto 15 px, sin relleno.
@@ -556,18 +551,15 @@ Zona de foto en una sola fila, a la altura de un campo: icono de cámara dibujad
 - **Error:** borde ámbar y mensaje ámbar de 14 px bajo la zona, sustituyendo a la ayuda; el error manda sobre el estado de arrastre. Valida tipo y tamaño en el cliente, y el 413 o 415 del servidor vuelve como el mismo error. Si el navegador no puede decodificar el archivo se descarta con "Ese archivo no se puede mostrar como imagen. Elige otra foto.".
 - **Accesibilidad:** grupo con etiqueta, el `input` de archivo oculto con `sr-only` y el botón visible como único punto de entrada; al fallar, el foco va al botón. Es la única fotografía del formulario y se dibuja en un lienzo (ver The Canvas Preview Rule).
 
-### Form Note (subir producto)
-Nota llana antes del botón de envío que explica las reglas de precio del servidor: Tecnología suma el 21 % de IVA, Deporte resta el 10 %, Ofertas resta 5 € (mínimo 1 €) y Premium suma el 25 %. Borde de 1,5 px Filete, esquina 8 px, padding 12 x 16 px, texto de 15 px en Tinta Suave, sin relleno, sin icono ni plancha. Es informativa y no usa ámbar: las reglas son un hecho, no un error.
-
 ### Listing Preview (subir producto)
 Prueba de impresión del anuncio en la columna derecha: copia visual de la tarjeta del listado (Pliego, filete de 1,5 px Filete, esquina 16 px, foto de 236 px, precio de 36 px, nombre de dos líneas fijas, etiqueta "En venta" y categoría), pero inerte: `aria-hidden`, sin enlace, sin hover ni entrada.
 - **Sin foto:** halftone, que sigue siendo solo la marca de "sin foto". Con foto: la foto dibujada en lienzo, sin tratamiento.
-- **Precio:** "— €" liso en Tinta Tenue, sin plancha, hasta que hay un precio válido; entonces el precio final estimado (con la regla de categoría aplicada) con las dos pasadas del listado.
+- **Precio:** "— €" liso en Tinta Tenue, sin plancha, hasta que hay un precio válido; entonces el precio escrito, con las dos pasadas del listado.
 - **Relleno:** "El nombre de tu producto" en Tinta Tenue mientras el nombre está vacío; la categoría vacía muestra "Categoría automática".
-- **Rótulo:** encabezado "Así se verá en el listado" y nota "Una muestra: la categoría y el precio final se confirman al publicar.".
+- **Rótulo:** encabezado "Así se verá en el listado" y nota "Una muestra: si dejas la categoría vacía, la IA la elige al publicar.".
 
 ### Published Notice (ficha)
-Tras publicar, la ficha muestra encima del artículo un aviso informativo (`FormAlert` de `role="status"`: borde Tinta Violeta, texto Tinta Suave, esquina 8 px) con un resumen: "Anuncio publicado.", si la categoría la eligió la IA ("La IA le ha puesto la categoría «X».") y, si el precio cambió, "El precio final es X: pediste Y y la categoría aplica Z.". El estado viaja en la navegación, así que al recargar desaparece.
+Tras publicar, la ficha muestra encima del artículo un aviso informativo (`FormAlert` de `role="status"`: borde Tinta Violeta, texto Tinta Suave, esquina 8 px) con un resumen: "Anuncio publicado." y, si la categoría la eligió la IA ("La IA le ha puesto la categoría «X»."). El estado viaja en la navegación, así que al recargar desaparece.
 
 ### Sales Board (Mis ventas)
 Tablero de tres columnas (ver Layout), una `section` con etiqueta por estado ("Artículos en venta", "pendientes de envío", "vendidos"). La cabecera de columna reutiliza tal cual las etiquetas de estado (forma y color) más el recuento en Headline y, en Vendido, el total cobrado en 15 px, Tinta Suave, a la derecha. Es una lista plana: filas separadas por filetes, nunca tarjetas anidadas ni plancha.
@@ -592,7 +584,7 @@ Un solo contenedor (Pliego, filete de 1,5 px, esquina 16 px, `overflow: hidden`)
 - **Bandeja vacía:** "Todavía no tienes conversaciones" (Notice Title), una frase en Tinta Suave y el enlace "Ver anuncios" (Violeta Claro subrayado). **Error:** caja con borde ámbar de 1,5 px, esquina 8 px y texto ámbar de 15 px (`role="alert"`). **Carga:** cuatro bloques lisos con pulso y un `role="status"` oculto.
 - **Cabecera de conversación:** miniatura de 48 px (decorativa, enlaza a la ficha, fuera de la tabulación), nombre de la otra persona en Notice Title, debajo el nombre del producto (enlace, 600, hover Violeta Claro) y el precio en 14 px Tinta Suave, y a la derecha la etiqueta de estado del anuncio. Para el vendedor, si el comprador aún no ha escrito, el nombre es "Comprador nº N" (la interfaz no inventa otro).
 - **Paneles vacíos de la zona derecha:** centrados, un título en Headline y una frase en Tinta Suave de hasta `max-w-sm`: "Elige una conversación", "Este anuncio es tuyo" (el vendedor sin comprador indicado), "Este anuncio no existe" y "Cargando…". Sin icono, sin borde, sin botón. Error de carga del anuncio: frase en Tinta Suave y el enlace de texto "Reintentar" en Violeta Claro.
-- **Sin mensajes todavía:** frase centrada en Tinta Suave dentro del registro ("Todavía no hay mensajes. Escribe el primero a X sobre «Y»."). **Error de carga de la conversación:** texto en Tinta Suave (`role="alert"`) y "Reintentar" primario de 44 px con plancha. **Carga:** "Cargando la conversación…" en Tinta Tenue.
+- **Sin mensajes todavía:** frase centrada en Tinta Suave dentro del registro ("Todavía no hay mensajes. Escribe el primero a X sobre «Y»."). **Error de carga de la conversación** (solo si aún no se ha cargado nunca): texto en Tinta Suave (`role="alert"`) y "Reintentar" primario de 44 px con plancha. **Carga:** "Cargando la conversación…" en Tinta Tenue.
 
 ### Message Log y burbujas
 Registro con `role="log"` y `aria-live="polite"`, etiquetado "Mensajes con X", con desplazamiento propio. Los mensajes van en orden cronológico; cuando cambia el día aparece el separador (Day Label: "HOY", "AYER" o "12 oct", comparando días del calendario local).
@@ -605,7 +597,7 @@ Registro con `role="log"` y `aria-live="polite"`, etiquetado "Mensajes con X", c
 Formulario al pie de la conversación, bajo un filete de 1,5 px. Campo de varias líneas de 2 filas, no redimensionable, sin etiqueta visible (etiqueta oculta "Escribe un mensaje a X") y con el marcador "Escribe un mensaje…"; Pliego, borde 1,5 px Tinta Tenue al 60 %, esquina 10 px, padding 12 x 16 px, texto 16 px con interlineado de 24 px; hover Tinta Tenue plena, foco borde Tinta Violeta, sin plancha. Al lado, "Enviar" (primario de 48 px con plancha; "Enviando…" mientras se envía; deshabilitado, al 60 %, si el texto está vacío o en blanco). Intro envía, Mayús+Intro hace salto de línea y un IME en composición no envía. Máximo 1000 caracteres; el contador "N/1000" aparece desde 900. Debajo, en Micro y Tinta Tenue, la línea de ayuda "Intro envía · Mayús+Intro, nueva línea · se actualiza solo cada pocos segundos". Si el envío falla, una `FormAlert` ámbar encima del campo y el texto escrito se conserva; tras enviar, el campo se vacía y recupera el foco.
 
 ### Polling (comportamiento del chat)
-La conversación se refresca cada 3 s pidiendo solo los mensajes más nuevos que el último recibido (`after_id`); la bandeja, cada 8 s. Las consultas no se apilan (si una tarda, se salta la siguiente), se pausan mientras la pestaña está oculta y se lanzan de inmediato al volver. No hay indicador de "escribiendo" ni de no leídos. Los WebSockets están previstos para más adelante y sustituirán a esto sin cambiar lo visual.
+La conversación se refresca cada 3 s pidiendo solo los mensajes más nuevos que el último recibido (`after_id`); la bandeja, cada 8 s. Las consultas no se apilan (si una tarda, se salta la siguiente), se pausan mientras la pestaña está oculta y se lanzan de inmediato al volver. El historial se pide completo (sin `after_id`) hasta que una primera carga ha tenido éxito; solo entonces se piden los mensajes nuevos. Un fallo puntual de la consulta en una conversación ya cargada, aunque esté vacía, no la lleva a la vista de error: sale la franja ámbar de conexión perdida. No hay indicador de "escribiendo" ni de no leídos. Los WebSockets están previstos para más adelante y sustituirán a esto sin cambiar lo visual.
 
 ### Status Tags (signature)
 Cada estado tiene color y forma fijos, para no depender solo del color: **En venta** = relleno violeta con texto Papel Negro; **Pendiente de envío** = borde ámbar 1,5 px sólido con texto ámbar; **Vendido** = borde punteado Tinta Tenue con texto Tinta Tenue. Esquina 6 px, texto 13 px en 600. Nunca se oculta ni se mueve de la base de la tarjeta. En Mis ventas la misma etiqueta encabeza cada columna.
@@ -648,7 +640,6 @@ Entrada de tarjetas `print-in` (0,7 s, ease-out-expo, la segunda pasada parte a 
 - **Do** marcar todo error con ámbar más texto (en los campos, además borde e icono de aviso), llevar el foco al primer campo inválido y devolverlo a la contraseña tras un login fallido. Lo informativo va con borde violeta, no con ámbar.
 - **Do** mover con ease-out-expo y sin rebote; respetar `prefers-reduced-motion`.
 - **Do** mostrar el precio de la vista previa liso ("— €") hasta que exista un precio válido, y dibujar la foto elegida en un lienzo, nunca con una URL de objeto.
-- **Do** contar antes de publicar lo que cambia el precio (nota llana y ayuda del campo) y confirmarlo después en el aviso informativo violeta de la ficha.
 - **Do** presentar listas de gestión como filas planas separadas por filetes de 1,5 px bajo una cabecera de columna con la etiqueta de estado (forma y color), no como tarjetas anidadas.
 - **Do** confirmar en línea, dentro de la fila, toda acción que no se puede deshacer: frase que dice qué pasará, botón "Sí, …" primario y "Volver" como enlace.
 - **Do** mantener marcado, con contorno violeta de 2 px hacia dentro, lo que ha cambiado de sitio hasta que el puntero o el foco lo alcancen.
@@ -671,7 +662,6 @@ Entrada de tarjetas `print-in` (0,7 s, ease-out-expo, la segunda pasada parte a 
 - **Don't** anidar tarjetas dentro de las columnas de Mis ventas ni ponerles plancha, sello o matrícula de precio: el tablero es plano.
 - **Don't** anidar tarjetas dentro de la bandeja del chat ni darles plancha: las conversaciones son filas planas separadas por filetes, y la fila activa solo cambia de relleno.
 - **Don't** poner plancha, segunda pasada ni sombra a las burbujas, ni teñir la burbuja ajena de violeta: el violeta del chat es de quien escribe.
-- **Don't** usar ámbar para la nota de reglas de precio; lo informativo va con filete neutro o violeta.
 
 ## Known drift (no canonizado)
 
@@ -703,6 +693,5 @@ Entrada de tarjetas `print-in` (0,7 s, ease-out-expo, la segunda pasada parte a 
 - El error de compra de `BuyPanel` repite a mano el patrón de `FormAlert` (texto 16 px frente a 15 px, mismo ámbar y 8 px de esquina) en lugar de usar el componente; y ambas alertas miden 8 px de esquina frente a los 12 px de los bloques de aviso de la ficha.
 - La zona de la foto muestra el error con borde y mensaje ámbar pero sin el icono de triángulo que llevan los campos de texto (`TextField`); el aviso es legible por texto, pero la señal no es idéntica.
 - La zona de la foto repite a mano la etiqueta (15 px, 600), la ayuda y el borde de `TextField` en lugar de reutilizarlos, y el área del campo de categoría usa el `datalist` nativo, cuyo desplegable y flecha los dibuja el navegador fuera de la paleta.
-- El precio de la vista previa muestra el precio con la regla de categoría ya aplicada (réplica en `utils/pricing.ts` de `backend/services/pricing.py`) y la nota de reglas repite sus valores como texto fijo: si el servidor cambia una regla, hay tres sitios que actualizar. La vista previa avisa de que es una muestra.
 - La ayuda de la descripción mezcla el texto de orientación con el contador de caracteres en una sola línea, en lugar de separarlos.
-- La nota de reglas de precio (esquina 8 px, 15 px) y el aviso "Anuncio publicado" comparten forma con `FormAlert` y con el error de compra; todas las alertas de formulario siguen en 8 px frente a los 12 px de los bloques de aviso de la ficha.
+- El aviso "Anuncio publicado" comparte forma con `FormAlert` y con el error de compra; todas las alertas de formulario siguen en 8 px frente a los 12 px de los bloques de aviso de la ficha.

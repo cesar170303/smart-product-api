@@ -12,23 +12,31 @@ La versión del proyecto vive en [`frontend/package.json`](frontend/package.json
 
 > Salen del apartado "Pendientes" de `CLAUDE.md` y de lo visto en el repo. Verifica cada uno antes de darlo por cierto y bórralo de aquí cuando se resuelva.
 
-- No hay migraciones (Alembic): las tablas se crean con `create_all`, así que cambiar un modelo no actualiza una BD ya existente.
-- Rate limit de `/products`: 5 peticiones/min por IP en total (GET incluidos) es muy estricto para un frontend que lista productos.
-- `API_BASE_URL` del frontend está hardcodeada a `http://localhost:8000`.
+- No hay migraciones (Alembic): las tablas se crean con `create_all`, así que cambiar un modelo (o añadir un índice) no actualiza una BD ya existente. Para el índice de mensajes de 0.8.0 en una base que ya tenía la tabla: `CREATE INDEX IF NOT EXISTS ix_messages_conversation ON messages (product_id, buyer_id, id);`
 - CORS solo permite `localhost:5173` y `127.0.0.1:5173`.
-- Tests del backend: solo existen los de mensajería (`backend/tests/test_messages.py`).
+- Tests del backend: solo cubren el chat y los productos (`backend/tests`, con `unittest`); faltan pedidos y autenticación.
+- Las fotos que se suben y luego no llegan a publicarse (el anuncio falla o el vendedor cambia de foto) quedan en `backend/uploads`: no hay endpoint ni tarea que las limpie.
+- La IA puede devolver variantes de una misma categoría ("Deporte" / "Deportes"), que parten los filtros del listado.
+- El pedido solo trae `buyer_id`: Mis ventas muestra "comprador nº N" en vez del nombre.
+- `ProductNotFoundException` responde en inglés ("Product with ID n not found"); el resto de errores, en español.
 
-## [0.8.0] - 2026-10-23 (en curso, sin commitear)
+## [0.8.0] - 2026-10-23
 
 ### Añadido / Cambiado
-- **Mensajería entre usuarios**: conversaciones y mensajes por producto (`GET /conversations`, `GET`/`POST /products/{id}/messages`), con su modelo, repositorio y casos de uso.
+- **Mensajería entre usuarios**: conversaciones y mensajes por producto (`GET /conversations`, `GET`/`POST /products/{id}/messages`), con su modelo, repositorio y casos de uso. El chat del frontend consulta las novedades cada 3 s (`after_id`); los WebSockets quedan para más adelante.
 - **Frontend reescrito en TypeScript** con `react-router-dom`, Tailwind 4 vía `@tailwindcss/vite` y fuentes Bricolage Grotesque / Hanken Grotesk.
-- Páginas nuevas: listado, detalle de producto, subida de producto, ventas, chat; más `RequireAuth` y contexto de autenticación.
+- Páginas nuevas: listado, detalle de producto, entrar y crear cuenta, subida de producto con vista previa, Mis ventas y chat; más `RequireAuth` y contexto de autenticación.
 - Tests con Vitest para páginas y componentes; `npm run typecheck` y `build` con `tsc --noEmit`.
 - Se eliminan `autoprefixer` y `postcss` (Tailwind 4 ya no los necesita).
+- **El precio publicado es el que escribe el vendedor**: `POST`/`PUT /products` ya no recalculan el precio según la categoría (IVA, descuentos, márgenes). `services/pricing.py` se conserva como ejemplo del patrón *Strategy*, pero ningún endpoint lo usa.
+- `GET /products` admite `?seller_id=` para pedir solo los anuncios de un vendedor (Mis ventas y el recuento de la ficha ya no descargan todo el catálogo).
+- Límites de peticiones: las lecturas de `/products` tienen su propio contador (120/min por IP); las escrituras siguen en 30/min.
 
-### Fallos conocidos
-- Cambio muy grande sin commitear: conviene partirlo en commits por tema (mensajería backend / migración a TypeScript / páginas nuevas) antes de dar la versión por cerrada.
+### Corregido
+- Borrar un anuncio con conversaciones fallaba con un 500 (la clave foránea de `messages`): ahora se borran sus mensajes con el anuncio. Un anuncio con pedidos sigue sin poder borrarse.
+- Chat: enviar un mensaje antes de que cargara el historial podía dejar sin mostrar los mensajes anteriores si esa carga fallaba; y un fallo suelto en una conversación vacía la tapaba con una pantalla de error.
+- La sesión se cierra sola cuando el token caduca, en lugar de seguir pareciendo abierta hasta recibir un 401.
+- Índice compuesto `ix_messages_conversation (product_id, buyer_id, id)` para la consulta que repite cada chat abierto.
 
 ## [0.7.0] - 2026-10-23
 

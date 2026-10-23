@@ -38,10 +38,10 @@ Dos cosas que un marketplace de segunda mano genérico no hace:
 
 ## Capabilities and Constraints
 
-- **API** (FastAPI, `http://localhost:8000`, configurable con `VITE_API_URL`): `POST /register`, `POST /login`, `GET /products`, `GET /products/{id}` (públicos), `POST/PUT/DELETE /products` (con token), `POST /uploads` (foto), `GET /orders`, `GET /orders/{id}`, `POST /orders`, `PATCH /orders/{id}/status` (todos con token). Las fotos se sirven en `/media/<archivo>`.
+- **API** (FastAPI, `http://localhost:8000`, configurable con `VITE_API_URL`): `POST /register`, `POST /login`, `GET /products` (con `?seller_id=` para ver solo los anuncios de un vendedor), `GET /products/{id}` (públicos), `POST/PUT/DELETE /products` (con token), `POST /uploads` (foto), `GET /orders`, `GET /orders/{id}`, `POST /orders`, `PATCH /orders/{id}/status`, y el chat: `GET /conversations`, `GET`/`POST /products/{id}/messages` (todos con token). Las fotos se sirven en `/media/<archivo>`.
 - **Producto** (`ProductRead`): `id`, `name`, `description`, `price`, `image_url` (una sola foto), `status`, `created_at`, `category {…}`, `seller {id, name, location}`. Para crear: `name` (mín. 3), `description`, `price` (> 0), `image_url` (la ruta que devuelve `/uploads`), `category` opcional.
 - **Pedido** (`OrderRead`): `id`, `buyer_id`, `status` (`pending`/`completed`/`cancelled`), `created_at`, `product`. `GET /orders` devuelve los pedidos en los que participas (como comprador o vendedor).
-- **No existe todavía en el backend:** buscador (`?q=`; se filtra en el cliente), endpoint de "mi usuario" (el id sale del claim `sub` del JWT), varias fotos por producto, valoraciones o número de ventas del vendedor, y **chat** (hay que construirlo en el backend antes de la pantalla 6).
+- **No existe todavía en el backend:** buscador (`?q=`; se filtra en el cliente), endpoint de "mi usuario" (el id sale del claim `sub` del JWT), varias fotos por producto, valoraciones o número de ventas del vendedor, nombre del comprador en los pedidos (solo `buyer_id`) y avisos de mensajes sin leer. El chat existe, pero por sondeo cada pocos segundos; los WebSockets quedan para más adelante.
 - **Límite de peticiones:** `/products` 30/min por IP, `/orders` 20/min, `/login` 5/min (`429` con mensaje en español).
 - **Errores:** JSON en español con clave `mensaje` (y `detalles` en los 422).
 - CORS solo admite `localhost:5173` y `127.0.0.1:5173`.

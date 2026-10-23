@@ -2,7 +2,6 @@ from models.Product import ProductCreate, ProductModel
 from models.User import UserModel
 from repository.category_repository import CategoryRepository
 from repository.product_repository import ProductRepository
-from services.pricing import get_pricing_strategy
 from use_cases.ResolveCategory import resolve_category
 
 
@@ -22,7 +21,8 @@ def create_new_product(
     db_product = ProductModel(
         name=product_data.name,
         description=product_data.description,
-        price=get_pricing_strategy(category.name).calculate_final_price(product_data.price),
+        # El precio es el que escribe el vendedor: entre particulares no se suma IVA ni se aplican descuentos por categoría
+        price=product_data.price,
         image_url=product_data.image_url,
         user_id=current_user.id,
         category_id=category.id,

@@ -6,7 +6,6 @@ from google import genai
 logger = logging.getLogger(__name__)
 
 # Categoría que se usa cuando Gemini falla o no devuelve nada aprovechable.
-# No está en PRICING_CALCULATORS, así que el motor de precios aplica StandardPricing.
 DEFAULT_CATEGORY = "General"
 
 # Segundos máximos de espera a Gemini antes de rendirnos y usar la categoría por defecto.

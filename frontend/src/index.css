@@ -1,3 +1,157 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import 'tailwindcss';
+
+/* Tinta Riso: una sola tinta violeta sobre papel negro, con el registro de la segunda pasada ligeramente desplazado */
+@theme {
+  --color-paper: #0f0e13;
+  --color-sheet: #17151d;
+  --color-sheet-high: #1d1a27;
+  --color-line: #2c2838;
+  --color-ink: #f2effa;
+  --color-ink-dim: #cfc9e2;
+  --color-ink-faint: #a9a3c0;
+  --color-violet: #8b5cf6;
+  --color-violet-deep: #5b34c9;
+  --color-violet-soft: #c4b5fd;
+  --color-amber: #fbbf24;
+
+  --font-display: 'Bricolage Grotesque Variable', 'Arial Narrow', sans-serif;
+  --font-sans: 'Hanken Grotesk Variable', system-ui, sans-serif;
+
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Distancia de la segunda pasada de tinta. Registrada como longitud para poder animarla */
+@property --reg {
+  syntax: '<length>';
+  inherits: true;
+  initial-value: 4px;
+}
+
+@layer base {
+  :root {
+    color-scheme: dark;
+  }
+
+  /* Grano de papel: ruido fino generado en SVG (sin ficheros), apenas perceptible, como el papel de una risografía */
+  body {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .78 0 0 0 0 .72 0 0 0 0 1 .5 0 0 0 -.27'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    background-color: var(--color-paper);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    font-size: 1rem;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    caret-color: var(--color-violet);
+  }
+
+  ::selection {
+    background: var(--color-violet);
+    color: var(--color-paper);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-violet-soft);
+    outline-offset: 3px;
+    border-radius: 4px;
+  }
+
+  /* Barra de desplazamiento del mismo papel y tinta */
+  * {
+    scrollbar-color: var(--color-line) var(--color-paper);
+  }
+
+  input::placeholder {
+    color: var(--color-ink-faint);
+    opacity: 1;
+  }
+
+  input[type='search']::-webkit-search-cancel-button {
+    appearance: none;
+  }
+}
+
+@layer components {
+  /* Texto con segunda pasada de tinta desplazada (precio, logotipo) */
+  .misregistered {
+    /* dos pasadas desplazadas: la profunda cerca, la viva más lejos y más tenue, como un sobreimpreso mal registrado */
+    text-shadow:
+      var(--reg) var(--reg) 0 var(--color-violet-deep),
+      calc(var(--reg) * 2) calc(var(--reg) * 2) 0 color-mix(in srgb, var(--color-violet) 55%, transparent);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .logo-mark {
+    display: inline-block;
+    text-shadow: var(--reg) var(--reg) 0 var(--color-violet);
+  }
+
+  /* El registro se encaja cuando la tarjeta (o el logotipo) se enfoca o se señala */
+  .register-on-focus {
+    transition: --reg 0.5s var(--ease-out-expo);
+  }
+
+  .group:hover .register-on-focus,
+  .group:focus-visible .register-on-focus,
+  .group:focus-within .register-on-focus {
+    --reg: 0px;
+    /* golpe de registro: las tintas arrancan muy desplazadas y encajan de golpe, como una plancha que cae en su sitio */
+    animation: register-slam 0.55s var(--ease-out-expo) both;
+  }
+
+  /* Trama de puntos de la tinta riso: marcador de una foto que falta o no carga */
+  .halftone {
+    background-color: var(--color-sheet-high);
+    background-image: radial-gradient(circle at center, var(--color-violet) 0 2.2px, transparent 2.7px);
+    background-size: 11px 11px;
+  }
+
+  .halftone-fine {
+    background-size: 8px 8px;
+  }
+
+  .halftone-coarse {
+    background-size: 14px 14px;
+  }
+
+  /* Al cargar, cada pliego "entra en registro": la segunda pasada parte desplazada y se asienta */
+  .print-in {
+    animation: print-in 0.7s var(--ease-out-expo) both;
+    animation-delay: calc(var(--i, 0) * 45ms);
+  }
+}
+
+@keyframes register-slam {
+  from {
+    --reg: 16px;
+  }
+  to {
+    --reg: 0px;
+  }
+}
+
+@keyframes print-in {
+  from {
+    --reg: 11px;
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    --reg: 4px;
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .print-in {
+    animation: none;
+  }
+
+  .register-on-focus,
+  .group:hover .register-on-focus,
+  .group:focus-visible .register-on-focus,
+  .group:focus-within .register-on-focus {
+    transition: none;
+    animation: none;
+  }
+}

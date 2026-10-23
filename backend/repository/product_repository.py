@@ -11,8 +11,12 @@ class ProductRepository:
     def __init__(self, session: Session):
         self.session = session
 
-    def get_products(self):
+    def get_products(self, seller_id: int | None = None):
+        """Todos los productos o, con seller_id, solo los de ese vendedor (así el frontend no tiene que
+        descargar todo el catálogo para ver "Mis ventas" o contar los anuncios de una persona)."""
         statement = select(ProductModel).options(*_WITH_RELATIONS)
+        if seller_id is not None:
+            statement = statement.where(ProductModel.user_id == seller_id)
         return self.session.exec(statement).all()
 
     def get_product_by_id(self, product_id: int, for_update: bool = False):

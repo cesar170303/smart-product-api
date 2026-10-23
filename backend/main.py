@@ -2,9 +2,9 @@ from fastapi import FastAPI
 from sqlmodel import SQLModel
 from core.database import engine
 from contextlib import asynccontextmanager
-import models  # noqa: F401  (registra las 4 tablas en SQLModel.metadata antes del create_all)
+import models  # noqa: F401  (registra las 5 tablas en SQLModel.metadata antes del create_all)
 from fastapi.staticfiles import StaticFiles
-from router import auth, orders, products, uploads
+from router import auth, messages, orders, products, uploads
 from services.image_storage import MEDIA_URL_PREFIX, UPLOAD_DIR
 from core.exceptions import AppException, ProductNotFoundException, app_exception_handler, exception_handler, product_not_found_exception_handler, validation_exception_handler, Starlette_exception_handler, rate_limit_exceeded_handler
 from core.rate_limit import limiter
@@ -61,5 +61,6 @@ app.mount(MEDIA_URL_PREFIX, StaticFiles(directory=UPLOAD_DIR), name="media")
 app.include_router(products.router)
 app.include_router(uploads.router)
 app.include_router(orders.router)
+app.include_router(messages.router)
 app.include_router(auth.router)
 

@@ -16,3 +16,8 @@ dist/
 .claude/settings.local.json
 .claude/worktrees/
 .claude/skills/impeccable/scripts/bin/
+
+# Impeccable: bocetos de la ronda de decisión y capturas de revisión (se regeneran, pesan ~3,5 MB).
+# Lo que sí se versiona de .impeccable/ son config.json, design.json y surfaces/.
+.impeccable/mocks/
+.impeccable/review/

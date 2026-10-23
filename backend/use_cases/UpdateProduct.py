@@ -5,7 +5,6 @@ from models.User import UserModel
 from repository.category_repository import CategoryRepository
 from repository.product_repository import ProductRepository
 from services.image_storage import delete_image
-from services.pricing import get_pricing_strategy
 from use_cases.ResolveCategory import resolve_category
 
 
@@ -31,7 +30,7 @@ def update_products(
     product_found.name = product.name
     product_found.description = product.description
     product_found.image_url = product.image_url
-    product_found.price = get_pricing_strategy(category.name).calculate_final_price(product.price)
+    product_found.price = product.price
     product_found.category_id = category.id
 
     repository.update_product(product_found)

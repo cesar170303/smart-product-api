@@ -44,6 +44,21 @@ export async function loginUser(endpoint, username, password) {
   return response.json();
 }
 
+// A diferencia del login (formulario), /register recibe un JSON con name, email y password
+export async function registerUser(name, email, password) {
+  const response = await fetch(`${API_BASE_URL}/register`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ name, email, password }),
+  });
+
+  if (!response.ok) {
+    throw await buildError(response);
+  }
+
+  return response.json();
+}
+
 export async function getProducts() {
   const response = await fetch(`${API_BASE_URL}/products`);
 

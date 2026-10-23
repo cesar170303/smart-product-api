@@ -1,10 +1,12 @@
 import { useState } from "react";
 import LoginPage from "./pages/LoginPage.jsx";
 import ProductsPage from "./pages/ProductsPage.jsx";
+import RegisterPage from "./pages/RegisterPage.jsx";
 import { clearToken, getToken, saveToken } from "./utils/auth.js";
 
 export default function App() {
   const [token, setToken] = useState(() => getToken());
+  const [showRegister, setShowRegister] = useState(false);
 
   const handleLogin = (newToken) => {
     saveToken(newToken);
@@ -14,6 +16,7 @@ export default function App() {
   const handleLogout = () => {
     clearToken();
     setToken(null);
+    setShowRegister(false);
   };
 
   return (
@@ -25,7 +28,16 @@ export default function App() {
           <h1 className="text-3xl font-bold text-sky-400 bg-slate-800 p-8 rounded-xl shadow-lg text-center w-full max-w-md ">
             Bienvenido a la aplicación
           </h1>
-          <LoginPage onLogin={handleLogin} />
+          {showRegister ? (
+            <RegisterPage onLogin={handleLogin} onShowLogin={() => setShowRegister(false)} />
+          ) : (
+            <>
+              <LoginPage onLogin={handleLogin} />
+              <button type="button" onClick={() => setShowRegister(true)} className="text-sky-400 hover:underline text-sm">
+                ¿No tienes cuenta? Crear cuenta
+              </button>
+            </>
+          )}
         </>
       )}
     </div>

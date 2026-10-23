@@ -14,6 +14,12 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
 def get_current_user(token: str = Depends(oauth2_scheme), session: Session = Depends(get_session)) -> UserModel:
     """Valida el JWT (firma, caducidad y claims) y devuelve el usuario al que pertenece.
     Cualquier fallo termina en un 401."""
+    credentials_exception = HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="No se han podido validar las credenciales",
+        headers={"WWW-Authenticate": "Bearer"},
+    )
+
     try:
         payload = decode_access_token(token)
     except jwt.ExpiredSignatureError:
@@ -23,20 +29,18 @@ def get_current_user(token: str = Depends(oauth2_scheme), session: Session = Dep
             headers={"WWW-Authenticate": "Bearer"},
         )
     except jwt.InvalidTokenError:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="No se han podido validar las credenciales",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
+        raise credentials_exception
+
+    # El sub es el id del usuario. Un token antiguo (con el username) no es un número y se rechaza.
+    try:
+        user_id = int(payload["sub"])
+    except (TypeError, ValueError):
+        raise credentials_exception
 
     repo = UserRepository(session)
-    user = repo.get_user_by_username(payload["sub"])
+    user = repo.get_user_by_id(user_id)
 
     if user is None:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="No se han podido validar las credenciales",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
+        raise credentials_exception
 
     return user

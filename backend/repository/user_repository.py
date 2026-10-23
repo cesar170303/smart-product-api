@@ -26,6 +26,9 @@ class UserRepository:
         self.session.delete(user)
         self.session.commit()
 
-    def get_user_by_username(self, username: str):
-        statement = select(UserModel).where(UserModel.username == username)
+    def get_user_by_email(self, email: str):
+        statement = select(UserModel).where(UserModel.email == email.strip().lower())
         return self.session.exec(statement).first()
+
+    def rollback(self):
+        self.session.rollback()

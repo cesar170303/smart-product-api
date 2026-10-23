@@ -17,8 +17,8 @@ from core.rate_limit import limiter
 router = APIRouter(tags=["Products"])
 
 # Un solo contador por IP para todos los endpoints de /products (como app.use('/products', limiter) en Express):
-# 5 peticiones por minuto en total, sumando GET, POST, PUT y DELETE
-products_limit = limiter.shared_limit("5/minute", scope="products")
+# 30 peticiones por minuto en total, sumando GET, POST, PUT y DELETE
+products_limit = limiter.shared_limit("30/minute", scope="products")
 
 @router.get("/products",response_model=list[ProductRead])
 @products_limit

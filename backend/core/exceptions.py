@@ -37,6 +37,14 @@ class ConflictException(AppException):
     status_code = 409
 
 
+class PayloadTooLargeException(AppException):
+    status_code = 413
+
+
+class UnsupportedMediaTypeException(AppException):
+    status_code = 415
+
+
 async def app_exception_handler(request: Request, exc: AppException):
     return JSONResponse(
         status_code=exc.status_code,

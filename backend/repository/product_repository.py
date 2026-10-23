@@ -27,6 +27,11 @@ class ProductRepository:
         statement = select(OrderModel.id).where(OrderModel.product_id == product_id)
         return self.session.exec(statement).first() is not None
 
+    def is_image_in_use(self, image_url: str) -> bool:
+        """¿Algún producto sigue usando esta foto? Las rutas son públicas, así que dos productos podrían compartirla."""
+        statement = select(ProductModel.id).where(ProductModel.image_url == image_url)
+        return self.session.exec(statement).first() is not None
+
     def add_product(self, product: ProductModel):
         self.session.add(product)
         self.session.commit()

@@ -14,6 +14,7 @@ dist/
 
 # Claude Code: configuracion personal, worktrees temporales y binario de impeccable (se descarga solo)
 .claude/settings.local.json
+.claude/launch.json
 .claude/worktrees/
 .claude/skills/impeccable/scripts/bin/
 

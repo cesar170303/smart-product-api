@@ -2,8 +2,9 @@ from fastapi import FastAPI
 from sqlmodel import SQLModel
 from core.database import engine
 from contextlib import asynccontextmanager
-from router import auth, products
-from core.exceptions import ProductNotFoundException, exception_handler, product_not_found_exception_handler, validation_exception_handler, Starlette_exception_handler, rate_limit_exceeded_handler
+import models  # noqa: F401  (registra las 4 tablas en SQLModel.metadata antes del create_all)
+from router import auth, orders, products
+from core.exceptions import AppException, ProductNotFoundException, app_exception_handler, exception_handler, product_not_found_exception_handler, validation_exception_handler, Starlette_exception_handler, rate_limit_exceeded_handler
 from core.rate_limit import limiter
 from slowapi.errors import RateLimitExceeded
 
@@ -46,10 +47,12 @@ app.add_exception_handler(RequestValidationError ,validation_exception_handler)
 app.add_exception_handler(StarletteHTTPException ,Starlette_exception_handler)
 app.add_exception_handler(Exception ,exception_handler)
 app.add_exception_handler(ProductNotFoundException ,product_not_found_exception_handler)
+app.add_exception_handler(AppException ,app_exception_handler)
 
 # slowapi busca el limiter en app.state; el handler devuelve el 429 en español
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded ,rate_limit_exceeded_handler)
 app.include_router(products.router)
+app.include_router(orders.router)
 app.include_router(auth.router)
 

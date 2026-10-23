@@ -39,6 +39,11 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
     return password_hasher.verify(plain_password, hashed_password)
 
 
+# Hash de relleno: en /login se verifica contra él cuando el email no existe, para que la respuesta
+# tarde lo mismo y no se pueda averiguar qué emails están registrados midiendo tiempos.
+DUMMY_PASSWORD_HASH = get_password_hash("relleno-para-igualar-tiempos")
+
+
 def create_access_token(data: dict, expires_delta: timedelta | None = None):
     
     to_encode = data.copy()

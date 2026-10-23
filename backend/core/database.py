@@ -10,7 +10,10 @@ DATABASE_URL = os.getenv("DATABASE_URL")
 if not DATABASE_URL:
     raise ValueError("ERROR CRÍTICO: La variable de entorno DATABASE_URL no está configurada en el archivo .env")
 
-engine = create_engine(DATABASE_URL, echo=True)
+# El SQL por consola solo se activa a propósito (SQL_ECHO=true en .env): volcarlo siempre ensucia los logs
+SQL_ECHO = os.getenv("SQL_ECHO", "false").lower() == "true"
+
+engine = create_engine(DATABASE_URL, echo=SQL_ECHO, pool_pre_ping=True)
 
 
 def get_session():

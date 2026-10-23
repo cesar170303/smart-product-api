@@ -28,6 +28,9 @@ export function useThread({ productId, buyerId, token, onUnauthorized }: UseThre
   const [offline, setOffline] = useState(false);
   const [attempt, setAttempt] = useState(0);
   const lastId = useRef(0);
+  // true cuando una consulta completa del historial ya tuvo éxito. No se deduce de lastId: enviar un mensaje
+  // también lo adelanta, y una conversación vacía tiene lastId a 0 aunque esté cargada.
+  const loadedOnce = useRef(false);
 
   const merge = useCallback((incoming: Message[]) => {
     if (incoming.length === 0) return;
@@ -42,7 +45,11 @@ export function useThread({ productId, buyerId, token, onUnauthorized }: UseThre
   usePolling(
     async (signal) => {
       try {
-        merge(await getMessages(productId, token, { buyerId, afterId: lastId.current, signal }));
+        // Hasta cargar el historial entero se pide desde el principio, aunque un envío ya haya adelantado lastId:
+        // si no, los mensajes anteriores no aparecerían nunca
+        const afterId = loadedOnce.current ? lastId.current : 0;
+        merge(await getMessages(productId, token, { buyerId, afterId, signal }));
+        loadedOnce.current = true;
         setStatus('ready');
         setOffline(false);
       } catch (caught) {
@@ -51,8 +58,8 @@ export function useThread({ productId, buyerId, token, onUnauthorized }: UseThre
           onUnauthorized();
           return;
         }
-        // Si ya había conversación en pantalla, un fallo suelto no la tapa: solo avisa y sigue intentando
-        if (lastId.current > 0) {
+        // Si la conversación ya se cargó (aunque esté vacía), un fallo suelto no la tapa: solo avisa y sigue intentando
+        if (loadedOnce.current) {
           setOffline(true);
         } else {
           setStatus('error');
@@ -65,6 +72,7 @@ export function useThread({ productId, buyerId, token, onUnauthorized }: UseThre
   );
 
   const retry = useCallback(() => {
+    loadedOnce.current = false;
     setStatus('loading');
     setAttempt((current) => current + 1);
   }, []);
@@ -74,8 +82,8 @@ export function useThread({ productId, buyerId, token, onUnauthorized }: UseThre
     async (body: string) => {
       try {
         const sent = await sendMessage(productId, body, token, buyerId);
+        // Enviar no cuenta como haber cargado el historial: eso lo decide solo una consulta completa
         merge([sent]);
-        setStatus('ready');
       } catch (caught) {
         if (caught instanceof ApiError && caught.status === HTTP_UNAUTHORIZED) onUnauthorized();
         throw caught;

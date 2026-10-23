@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { fakeToken } from '../testUtils';
-import { getUserIdFromToken } from './jwt';
+import { getTokenExpiry, getUserIdFromToken } from './jwt';
 
 const NOW = Date.UTC(2026, 9, 23, 12, 0, 0);
 const IN_ONE_HOUR = NOW / 1000 + 3600;
@@ -21,5 +21,17 @@ describe('getUserIdFromToken', () => {
 
   it('devuelve null si sub no es un número', () => {
     expect(getUserIdFromToken(fakeToken({ sub: 'abc', exp: IN_ONE_HOUR }), NOW)).toBeNull();
+  });
+});
+
+describe('getTokenExpiry', () => {
+  it('devuelve cuándo caduca el token, en milisegundos', () => {
+    expect(getTokenExpiry(fakeToken({ sub: '7', exp: IN_ONE_HOUR }))).toBe(IN_ONE_HOUR * 1000);
+  });
+
+  it('devuelve null si el token no se puede leer o no trae caducidad', () => {
+    expect(getTokenExpiry(null)).toBeNull();
+    expect(getTokenExpiry('basura')).toBeNull();
+    expect(getTokenExpiry(fakeToken({ sub: '7' }))).toBeNull();
   });
 });

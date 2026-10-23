@@ -185,6 +185,37 @@ describe('ChatPage', () => {
     expect(within(thread()).getByText('Sí, claro.')).toBeInTheDocument();
   });
 
+  it('si envías antes de que cargue el historial y la carga falla, al recuperarse aparece el historial completo', async () => {
+    signInAs(BUYER_ID);
+    const sent = message(3, BUYER_ID, 'Escribo mientras carga', 'Marcos');
+    vi.mocked(getMessages).mockRejectedValueOnce(new TypeError('Failed to fetch')).mockResolvedValue([hello, reply, sent]);
+    vi.mocked(sendMessage).mockResolvedValue(sent);
+    renderChat('/chat/7');
+    await (await inThread()).findByRole('alert');
+
+    await userEvent.type(screen.getByLabelText(/Escribe un mensaje/), 'Escribo mientras carga{Enter}');
+    await (await inThread()).findByText('Escribo mientras carga');
+    await advancePoll();
+
+    // enviar adelantó el último id conocido, pero el historial no estaba cargado: se vuelve a pedir desde el principio
+    expect(getMessages).toHaveBeenLastCalledWith(7, expect.any(String), expect.objectContaining({ afterId: 0 }));
+    expect(await (await inThread()).findByText('¿Sigue disponible?')).toBeInTheDocument();
+    expect(within(thread()).getAllByText('Escribo mientras carga')).toHaveLength(1);
+  });
+
+  it('una conversación vacía ya cargada no se tapa con un error si falla un sondeo suelto', async () => {
+    signInAs(BUYER_ID);
+    vi.mocked(getMessages).mockResolvedValueOnce([]).mockRejectedValue(new TypeError('Failed to fetch'));
+    renderChat('/chat/7');
+    expect(await screen.findByText(/Escribe el primero a Laura M\./)).toBeInTheDocument();
+
+    await advancePoll();
+
+    expect(await screen.findByText(/Sin conexión con el servidor/)).toBeInTheDocument();
+    expect(screen.getByText(/Escribe el primero a Laura M\./)).toBeInTheDocument();
+    expect(within(thread()).queryByRole('alert')).not.toBeInTheDocument();
+  });
+
   it('un fallo en la primera carga ofrece reintentar', async () => {
     signInAs(BUYER_ID);
     vi.mocked(getMessages).mockRejectedValueOnce(new TypeError('Failed to fetch')).mockResolvedValue([hello]);

@@ -29,3 +29,11 @@ export function getUserIdFromToken(token: string | null, now: number = Date.now(
   const id = Number(payload.sub);
   return Number.isInteger(id) ? id : null;
 }
+
+// Momento (en milisegundos) en que caduca el token, o null si no se puede leer o no trae caducidad.
+// Sirve para cerrar la sesión en el momento justo, sin esperar a que una petición devuelva 401.
+export function getTokenExpiry(token: string | null): number | null {
+  if (!token) return null;
+  const payload = readPayload(token);
+  return typeof payload?.exp === 'number' ? payload.exp * MS_PER_SECOND : null;
+}

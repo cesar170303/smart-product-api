@@ -11,7 +11,7 @@ type ProductState =
 const NETWORK_ERROR = 'No hemos podido conectar con el servidor. Comprueba tu conexión e inténtalo de nuevo.';
 const HTTP_NOT_FOUND = 404;
 
-// Carga un anuncio y, de paso, cuántos anuncios tiene su vendedor (contados del listado público).
+// Carga un anuncio y, de paso, cuántos anuncios tiene su vendedor (se piden solo los de esa persona).
 // Si el recuento falla no pasa nada: la ficha se muestra igual, sin ese dato.
 export function useProduct(id: number) {
   const [state, setState] = useState<ProductState>({ status: 'loading' });
@@ -20,9 +20,13 @@ export function useProduct(id: number) {
   useEffect(() => {
     const controller = new AbortController();
 
-    Promise.all([getProduct(id, controller.signal), getProducts(controller.signal).catch(() => null)])
-      .then(([product, all]) => {
-        const sellerListings = all ? all.filter((item) => item.seller.id === product.seller.id).length : null;
+    getProduct(id, controller.signal)
+      .then(async (product) => {
+        // Hace falta saber quién vende antes de contar sus anuncios
+        const sellerListings = await getProducts({ sellerId: product.seller.id, signal: controller.signal })
+          .then((listings) => listings.length)
+          .catch(() => null);
+        if (controller.signal.aborted) return;
         setState({ status: 'ready', product, sellerListings });
       })
       .catch((error: unknown) => {

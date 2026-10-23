@@ -38,6 +38,8 @@ describe('ProductDetailPage', () => {
     expect(screen.getByText(/Funciona perfectamente/)).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: 'Laura M.' })).toBeInTheDocument();
     expect(screen.getByText(/Alcalá de Henares · 2 anuncios en Kambio/)).toBeInTheDocument();
+    // solo se piden los anuncios de ese vendedor, no todo el catálogo
+    expect(getProducts).toHaveBeenCalledWith(expect.objectContaining({ sellerId: exampleProduct.seller.id }));
   });
 
   it('si no se pueden contar los anuncios del vendedor, la ficha se muestra igual', async () => {
@@ -49,21 +51,20 @@ describe('ProductDetailPage', () => {
     expect(screen.getByText('Alcalá de Henares')).toBeInTheDocument();
   });
 
-  it('recién publicado, cuenta la categoría de la IA y el cambio de precio', async () => {
-    vi.mocked(getProduct).mockResolvedValue({ ...exampleProduct, price: 121 });
+  it('recién publicado, cuenta la categoría que puso la IA', async () => {
+    vi.mocked(getProduct).mockResolvedValue({ ...exampleProduct, price: 100 });
     vi.mocked(getProducts).mockResolvedValue([]);
-    renderPage({ published: { requestedPrice: 100, aiCategory: true } });
+    renderPage({ published: { aiCategory: true } });
 
     const notice = await screen.findByText(/Anuncio publicado\./);
     expect(notice).toHaveTextContent('La IA le ha puesto la categoría «Tecnología»');
-    expect(notice).toHaveTextContent('+21 % de IVA');
     expect(notice).toHaveAttribute('role', 'status');
   });
 
-  it('recién publicado sin cambio de precio ni IA, solo confirma la publicación', async () => {
+  it('recién publicado con categoría escrita a mano, solo confirma la publicación', async () => {
     vi.mocked(getProduct).mockResolvedValue({ ...exampleProduct, price: 100 });
     vi.mocked(getProducts).mockResolvedValue([]);
-    renderPage({ published: { requestedPrice: 100, aiCategory: false } });
+    renderPage({ published: { aiCategory: false } });
 
     const notice = await screen.findByText(/Anuncio publicado\./);
     expect(notice).toHaveTextContent(/^Anuncio publicado\.$/);

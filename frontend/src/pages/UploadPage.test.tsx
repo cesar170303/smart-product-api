@@ -120,7 +120,7 @@ describe('UploadPage', () => {
       token,
     );
     expect(await screen.findByTestId('where')).toHaveTextContent('/producto/31');
-    expect(JSON.parse(screen.getByTestId('published').textContent ?? '{}')).toEqual({ requestedPrice: 120.5, aiCategory: true });
+    expect(JSON.parse(screen.getByTestId('published').textContent ?? '{}')).toEqual({ aiCategory: true });
   });
 
   it('con categoría escrita, la manda y no marca que la eligió la IA', async () => {
@@ -136,14 +136,23 @@ describe('UploadPage', () => {
     expect(JSON.parse((await screen.findByTestId('published')).textContent ?? '{}').aiCategory).toBe(false);
   });
 
-  it('avisa del cambio de precio al elegir una categoría con regla', async () => {
-    signInAs(5);
+  it('el precio es el que escribes: ninguna categoría lo recalcula, ni en la vista previa ni al enviar', async () => {
+    const token = signInAs(5);
+    vi.mocked(uploadImage).mockResolvedValue('/media/0123456789abcdef0123456789abcdef.png');
+    vi.mocked(createProduct).mockResolvedValue({ ...exampleProduct, id: 34 });
     renderUpload();
 
-    await userEvent.type(screen.getByLabelText('Precio'), '100');
-    await userEvent.type(screen.getByLabelText(/Categoría/), 'Tecnología');
+    await fillForm({ category: 'Tecnología', price: '100' });
 
-    expect(screen.getByText(/\+21 % de IVA\) se publicará a 121/)).toBeInTheDocument();
+    expect(screen.queryByText(/IVA/)).not.toBeInTheDocument();
+    expect(screen.getByText(/Se publica tal cual lo escribes/)).toBeInTheDocument();
+    // la vista previa enseña 100 €, no 121 €
+    expect(screen.getAllByText(/100\s€/).length).toBeGreaterThan(0);
+    expect(screen.queryByText(/121/)).not.toBeInTheDocument();
+
+    await submit();
+
+    expect(createProduct).toHaveBeenCalledWith(expect.objectContaining({ price: 100, category: 'Tecnología' }), token);
   });
 
   it('si el anuncio falla tras subir la foto, al reintentar no vuelve a subirla', async () => {

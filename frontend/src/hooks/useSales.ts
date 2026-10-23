@@ -10,15 +10,15 @@ type SalesState =
 const NETWORK_ERROR = 'No hemos podido conectar con el servidor. Comprueba tu conexión e inténtalo de nuevo.';
 const HTTP_UNAUTHORIZED = 401;
 
-// Carga los anuncios y los pedidos de quien tiene sesión. `onUnauthorized` se llama si la sesión caducó.
-export function useSales(token: string, onUnauthorized: () => void) {
+// Carga los anuncios (solo los suyos) y los pedidos de quien tiene sesión. `onUnauthorized` se llama si la sesión caducó.
+export function useSales(token: string, userId: number, onUnauthorized: () => void) {
   const [state, setState] = useState<SalesState>({ status: 'loading' });
   const [attempt, setAttempt] = useState(0);
 
   useEffect(() => {
     const controller = new AbortController();
 
-    Promise.all([getProducts(controller.signal), getOrders(token, controller.signal)])
+    Promise.all([getProducts({ sellerId: userId, signal: controller.signal }), getOrders(token, controller.signal)])
       .then(([products, orders]) => setState({ status: 'ready', products, orders }))
       .catch((error: unknown) => {
         if (controller.signal.aborted) return;
@@ -32,7 +32,7 @@ export function useSales(token: string, onUnauthorized: () => void) {
     return () => controller.abort();
     // onUnauthorized cambia en cada render del padre; solo importa al cargar o reintentar
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [token, attempt]);
+  }, [token, userId, attempt]);
 
   const reload = useCallback(() => {
     setState({ status: 'loading' });

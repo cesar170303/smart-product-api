@@ -80,6 +80,15 @@ describe('SalesPage', () => {
     expect(screen.getByText(/Has vendido 1 artículo por/)).toBeInTheDocument();
   });
 
+  it('pide solo los anuncios de la persona con sesión, no todo el catálogo', async () => {
+    signInAs(ME);
+    renderSales();
+
+    await screen.findByText('Bicicleta urbana');
+
+    expect(getProducts).toHaveBeenCalledWith(expect.objectContaining({ sellerId: ME }));
+  });
+
   it('no muestra los artículos de otras personas', async () => {
     signInAs(ME);
     const others = { ...product(9, 'Ajeno', 'available'), seller: { id: 99, name: 'Otra', location: null } };

@@ -10,7 +10,6 @@ import PhotoField from '../components/PhotoField';
 import { PRIMARY_BUTTON } from '../components/styles';
 import TextField from '../components/TextField';
 import { formatPrice } from '../utils/format';
-import { priceRuleFor } from '../utils/pricing';
 import { loginPath } from '../utils/routes';
 import type { PublishedInfo } from '../utils/published';
 import {
@@ -44,7 +43,7 @@ function useCategorySuggestions(): string[] {
   const [names, setNames] = useState<string[]>([]);
   useEffect(() => {
     const controller = new AbortController();
-    getProducts(controller.signal)
+    getProducts({ signal: controller.signal })
       .then((products) => {
         const unique = [...new Set(products.map((product) => product.category.name))];
         setNames(unique.sort((a, b) => a.localeCompare(b, 'es')));
@@ -70,8 +69,6 @@ export default function UploadPage() {
   const uploaded = useRef<{ file: File; url: string } | null>(null);
 
   const price = parsePrice(values.price);
-  const rule = priceRuleFor(values.category);
-  const finalPrice = price !== null && rule ? rule.apply(price) : price;
   const sending = step !== 'idle';
 
   const revalidate = (nextValues: ProductValues, nextFile: File | null) => {
@@ -137,7 +134,7 @@ export default function UploadPage() {
         },
         token,
       );
-      const published: PublishedInfo = { requestedPrice: price, aiCategory: !category };
+      const published: PublishedInfo = { aiCategory: !category };
       navigate(`/producto/${product.id}`, { state: { published } });
     } catch (caught) {
       setStep('idle');
@@ -156,11 +153,6 @@ export default function UploadPage() {
       setFormError(caught instanceof ApiError ? caught.message : NETWORK_ERROR);
     }
   };
-
-  const priceHint =
-    price !== null && rule && values.category.trim()
-      ? `Con «${values.category.trim()}» (${rule.label}) se publicará a ${formatPrice(finalPrice ?? price)}.`
-      : 'En euros, por ejemplo 45 o 45,50.';
 
   const buttonLabel = { idle: 'Publicar producto', uploading: 'Subiendo la foto…', publishing: 'Publicando…' }[step];
 
@@ -202,7 +194,7 @@ export default function UploadPage() {
               value={values.price}
               onChange={(value) => update('price', value)}
               error={errors.price}
-              hint={priceHint}
+              hint="En euros, por ejemplo 45 o 45,50. Se publica tal cual lo escribes."
             />
             <TextField
               id="product-category"
@@ -222,12 +214,6 @@ export default function UploadPage() {
             </datalist>
           </div>
 
-          <p className="rounded-lg border-[1.5px] border-line px-4 py-3 text-[15px] text-ink-dim">
-            Ojo: al publicar, el precio puede cambiar según la categoría (la elegida por ti o por la IA). Tecnología suma
-            el 21 % de IVA, Deporte resta el 10 %, Ofertas resta 5 € (mínimo 1 €) y Premium suma el 25 %. Verás el precio
-            final nada más publicar.
-          </p>
-
           {formError && <FormAlert>{formError}</FormAlert>}
 
           <button type="submit" disabled={sending} className={`h-14 w-full text-lg ${PRIMARY_BUTTON}`}>
@@ -240,11 +226,11 @@ export default function UploadPage() {
           <ListingPreview
             file={file}
             name={values.name}
-            price={finalPrice !== null ? formatPrice(finalPrice) : null}
+            price={price !== null ? formatPrice(price) : null}
             category={values.category}
             onUndecodable={photoUndecodable}
           />
-          <p className="mt-3 text-sm text-ink-faint">Una muestra: la categoría y el precio final se confirman al publicar.</p>
+          <p className="mt-3 text-sm text-ink-faint">Una muestra: si dejas la categoría vacía, la IA la elige al publicar.</p>
         </aside>
       </div>
     </PageShell>

@@ -16,7 +16,7 @@ export function useProducts() {
     // Si el componente se desmonta (o se reintenta) antes de que llegue la respuesta, se cancela la petición
     const controller = new AbortController();
 
-    getProducts(controller.signal)
+    getProducts({ signal: controller.signal })
       .then((products) => setState({ status: 'ready', products }))
       .catch((error: unknown) => {
         if (controller.signal.aborted) return;

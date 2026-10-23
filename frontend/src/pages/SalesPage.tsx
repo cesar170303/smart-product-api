@@ -71,7 +71,7 @@ export default function SalesPage() {
     navigate(loginPath('/mis-ventas'), { replace: true });
   };
   // RequireAuth garantiza la sesión; el valor vacío solo evita tratar token como posiblemente nulo
-  const { state, reload, applyOrder } = useSales(token ?? '', expired);
+  const { state, reload, applyOrder } = useSales(token ?? '', userId ?? 0, expired);
 
   const sales = useMemo(
     () => (state.status === 'ready' && userId !== null ? groupSales(state.products, state.orders, userId) : null),

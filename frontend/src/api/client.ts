@@ -57,8 +57,15 @@ export function imageSrc(path: string | null | undefined): string {
   return path ? `${API_BASE_URL}${path}` : '';
 }
 
-export function getProducts(signal?: AbortSignal): Promise<Product[]> {
-  return request<Product[]>('/products', { signal });
+interface ProductsQuery {
+  // solo los anuncios de este vendedor: así no se descarga todo el catálogo para ver "Mis ventas" o contar anuncios
+  sellerId?: number;
+  signal?: AbortSignal;
+}
+
+export function getProducts({ sellerId, signal }: ProductsQuery = {}): Promise<Product[]> {
+  const query = sellerId === undefined ? '' : `?seller_id=${sellerId}`;
+  return request<Product[]>(`/products${query}`, { signal });
 }
 
 export function getProduct(id: number, signal?: AbortSignal): Promise<Product> {

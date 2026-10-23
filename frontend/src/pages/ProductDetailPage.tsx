@@ -11,23 +11,12 @@ import StatusTag from '../components/StatusTag';
 import { PRIMARY_BUTTON } from '../components/styles';
 import { useProduct } from '../hooks/useProduct';
 import { formatPrice, formatRelativeDate } from '../utils/format';
-import { priceRuleFor } from '../utils/pricing';
 import type { PublishedInfo } from '../utils/published';
 
-const CENT = 0.005;
-
-// Qué decir de un anuncio recién publicado: que ya está, qué categoría puso la IA y si el precio cambió por la regla
+// Qué decir de un anuncio recién publicado: que ya está y, si la categoría la puso la IA, cuál fue
 function publishedMessage(product: Product, published: PublishedInfo): string {
   const parts = ['Anuncio publicado.'];
   if (published.aiCategory) parts.push(`La IA le ha puesto la categoría «${product.category.name}».`);
-  if (Math.abs(product.price - published.requestedPrice) > CENT) {
-    const rule = priceRuleFor(product.category.name);
-    parts.push(
-      `El precio final es ${formatPrice(product.price)}: pediste ${formatPrice(published.requestedPrice)} y la categoría${
-        rule ? ` aplica ${rule.label}` : ' cambia el precio'
-      }.`,
-    );
-  }
   return parts.join(' ');
 }
 

@@ -15,6 +15,7 @@ import { groupSales, type SaleItem } from '../utils/sales';
 
 const HTTP_UNAUTHORIZED = 401;
 const SKELETON_ROWS = 3;
+const SKELETON_COLUMNS = 3;
 const COLUMN_LABEL: Record<ProductStatus, string> = {
   available: 'en venta',
   reserved: 'pendientes de envío',
@@ -124,7 +125,7 @@ export default function SalesPage() {
             <p role="status" className="sr-only">
               Cargando tus ventas…
             </p>
-            {[0, 1, 2].map((column) => (
+            {Array.from({ length: SKELETON_COLUMNS }, (_, column) => (
               <div key={column} aria-hidden="true" className="flex flex-col gap-4">
                 <div className="h-9 rounded-lg bg-sheet-high motion-safe:animate-pulse" />
                 {Array.from({ length: SKELETON_ROWS }, (_, row) => (

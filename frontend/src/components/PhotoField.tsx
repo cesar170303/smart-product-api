@@ -1,7 +1,6 @@
 import { useRef, useState, type DragEvent } from 'react';
+import { BYTES_PER_MB } from '../utils/validation';
 import { SECONDARY_BUTTON } from './styles';
-
-const BYTES_PER_MB = 1024 * 1024;
 
 function formatSize(bytes: number): string {
   return `${(bytes / BYTES_PER_MB).toLocaleString('es-ES', { maximumFractionDigits: 1 })} MB`;

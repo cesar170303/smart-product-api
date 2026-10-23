@@ -7,10 +7,11 @@ export function fakeToken(payload: object): string {
 }
 
 const ONE_HOUR_SECONDS = 3600;
+const MS_PER_SECOND = 1000;
 
 // Sesión iniciada como el usuario `userId`, con el token en sessionStorage como hace la app
 export function signInAs(userId: number): string {
-  const token = fakeToken({ sub: String(userId), exp: Math.floor(Date.now() / 1000) + ONE_HOUR_SECONDS });
+  const token = fakeToken({ sub: String(userId), exp: Math.floor(Date.now() / MS_PER_SECOND) + ONE_HOUR_SECONDS });
   sessionStorage.setItem('access_token', token);
   return token;
 }

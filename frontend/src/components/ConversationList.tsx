@@ -6,6 +6,8 @@ import type { InboxState } from '../hooks/useConversations';
 import { conversationKey, conversationPath } from '../utils/chat';
 import { formatRelativeDate } from '../utils/format';
 
+const SKELETON_ROWS = 4;
+
 interface ConversationListProps {
   inbox: InboxState;
   userId: number;
@@ -34,7 +36,7 @@ export default function ConversationList({ inbox, userId, activeKey }: Conversat
         <p role="status" className="sr-only">
           Cargando tus conversaciones…
         </p>
-        {[0, 1, 2, 3].map((row) => (
+        {Array.from({ length: SKELETON_ROWS }, (_, row) => (
           <div key={row} aria-hidden="true" className="h-[72px] rounded-xl bg-sheet-high motion-safe:animate-pulse" />
         ))}
       </div>

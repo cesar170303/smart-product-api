@@ -8,12 +8,15 @@ const LOCATION_MAX = 100;
 
 export type FieldErrors<Field extends string> = Partial<Record<Field, string>>;
 
+// "local@dominio" tiene exactamente dos trozos al partir por la arroba
+const AT_SIGN_PARTS = 2;
+
 // algo@dominio.ext, sin espacios (misma idea que el backend, sin expresiones regulares costosas)
 export function isValidEmail(value: string): boolean {
   const email = value.trim();
   if (email.includes(' ')) return false;
   const parts = email.split('@');
-  if (parts.length !== 2) return false;
+  if (parts.length !== AT_SIGN_PARTS) return false;
   const [local, domain] = parts;
   const dot = domain.lastIndexOf('.');
   return local.length > 0 && dot > 0 && dot < domain.length - 1;
@@ -59,7 +62,11 @@ const DESCRIPTION_MAX = 5000;
 const CATEGORY_MAX = 50;
 const PRICE_PATTERN = /^\d{1,9}(\.\d{1,2})?$/;
 
-export const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
+const KILOBYTE = 1024;
+// Un solo número por constante: así el linter no marca 1024 ni 5 dentro de una multiplicación
+export const BYTES_PER_MB = KILOBYTE * KILOBYTE;
+const MAX_IMAGE_MB = 5;
+export const MAX_IMAGE_BYTES = MAX_IMAGE_MB * BYTES_PER_MB;
 const IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
 
 // "45", "45,5" y "45.50" valen; "abc", "-3", "1.234,50" o tres decimales no. Devuelve el número o null.

@@ -12,6 +12,7 @@ from models.User import SellerRead, UserModel
 from services.image_storage import IMAGE_URL_PATTERN
 
 if TYPE_CHECKING:
+    from models.Message import MessageModel
     from models.Order import OrderModel
 
 
@@ -62,6 +63,9 @@ class ProductModel(ProductBase, table=True):
     seller: Optional[UserModel] = Relationship(back_populates="products")
     category: Optional[CategoryModel] = Relationship(back_populates="products")
     orders: list["OrderModel"] = Relationship(back_populates="product")
+    # Al borrar un producto se borran también sus conversaciones: sin él no tienen sentido, y sin esto la clave
+    # foránea de messages impediría borrarlo. (Los pedidos sí protegen el borrado: ver DeleteProduct.)
+    messages: list["MessageModel"] = Relationship(back_populates="product", cascade_delete=True)
 
 
 class ProductRead(ProductBase):

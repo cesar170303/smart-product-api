@@ -54,11 +54,24 @@ class FakeMessageRepository:
         for message in self.messages:
             last[(message.product_id, message.buyer_id)] = message
         mine = [m for m in last.values() if m.buyer_id == user_id or PRODUCT.user_id == user_id]
+        rows = []
         for message in mine:
-            message.product = PRODUCT
-            message.buyer = BUYER if message.buyer_id == BUYER.id else OTHER_BUYER
-            message.sender = SELLER if message.sender_id == SELLER.id else message.buyer
-        return sorted(mine, key=lambda m: m.id, reverse=True)
+            # Objetos simples (no filas del ORM): asignar relaciones de mentira a un MessageModel real falla
+            buyer = BUYER if message.buyer_id == BUYER.id else OTHER_BUYER
+            rows.append(
+                SimpleNamespace(
+                    id=message.id,
+                    product_id=message.product_id,
+                    buyer_id=message.buyer_id,
+                    sender_id=message.sender_id,
+                    body=message.body,
+                    created_at=message.created_at,
+                    product=PRODUCT,
+                    buyer=buyer,
+                    sender=SELLER if message.sender_id == SELLER.id else buyer,
+                )
+            )
+        return sorted(rows, key=lambda row: row.id, reverse=True)
 
 
 def say(body, buyer_id=None):
@@ -66,18 +79,18 @@ def say(body, buyer_id=None):
 
 
 class MessageCreateTests(unittest.TestCase):
-    def test_quita_los_espacios_de_los_extremos(self):
+    def test_strips_surrounding_whitespace(self):
         self.assertEqual(say("  hola  ").body, "hola")
 
-    def test_rechaza_un_mensaje_en_blanco(self):
+    def test_rejects_a_blank_message(self):
         with self.assertRaises(ValidationError):
             say("     ")
 
-    def test_rechaza_un_mensaje_vacio(self):
+    def test_rejects_an_empty_message(self):
         with self.assertRaises(ValidationError):
             say("")
 
-    def test_rechaza_un_mensaje_demasiado_largo(self):
+    def test_rejects_a_message_that_is_too_long(self):
         with self.assertRaises(ValidationError):
             say("x" * (MAX_MESSAGE_LENGTH + 1))
 
@@ -90,46 +103,46 @@ class CreateMessageTests(unittest.TestCase):
     def send(self, user, body="hola", buyer_id=None, product_id=PRODUCT.id):
         return create_message(self.messages, self.products, product_id, say(body, buyer_id), user)
 
-    def test_el_comprador_escribe_como_el_mismo(self):
+    def test_buyer_writes_as_themselves(self):
         message = self.send(BUYER)
 
         self.assertEqual((message.sender_id, message.buyer_id, message.product_id), (BUYER.id, BUYER.id, PRODUCT.id))
 
-    def test_el_comprador_no_puede_hablar_en_nombre_de_otro(self):
+    def test_buyer_cannot_speak_on_behalf_of_someone_else(self):
         # aunque mande buyer_id de otra persona, la conversación es la suya
         message = self.send(BUYER, buyer_id=OTHER_BUYER.id)
 
         self.assertEqual(message.buyer_id, BUYER.id)
 
-    def test_el_vendedor_responde_a_un_comprador_con_pedido(self):
+    def test_seller_replies_to_a_buyer_with_an_order(self):
         message = self.send(SELLER, buyer_id=BUYER.id)
 
         self.assertEqual((message.sender_id, message.buyer_id), (SELLER.id, BUYER.id))
 
-    def test_el_vendedor_responde_a_un_comprador_que_ya_le_escribio(self):
+    def test_seller_replies_to_a_buyer_who_already_wrote(self):
         self.send(OTHER_BUYER)
 
         message = self.send(SELLER, buyer_id=OTHER_BUYER.id)
 
         self.assertEqual(message.buyer_id, OTHER_BUYER.id)
 
-    def test_el_vendedor_no_puede_escribir_a_un_desconocido(self):
+    def test_seller_cannot_write_to_a_stranger(self):
         with self.assertRaises(NotFoundException):
             self.send(SELLER, buyer_id=OTHER_BUYER.id)
 
-    def test_el_vendedor_tiene_que_indicar_el_comprador(self):
+    def test_seller_must_indicate_the_buyer(self):
         with self.assertRaises(BadRequestException):
             self.send(SELLER)
 
-    def test_el_vendedor_no_puede_escribirse_a_si_mismo(self):
+    def test_seller_cannot_write_to_themselves(self):
         with self.assertRaises(BadRequestException):
             self.send(SELLER, buyer_id=SELLER.id)
 
-    def test_producto_inexistente(self):
+    def test_missing_product(self):
         with self.assertRaises(ProductNotFoundException):
             self.send(BUYER, product_id=999)
 
-    def test_el_mensaje_guardado_es_un_mensaje_de_la_tabla(self):
+    def test_saved_message_is_a_table_row(self):
         self.assertIsInstance(self.send(BUYER), MessageModel)
 
 
@@ -144,16 +157,16 @@ class GetMessagesTests(unittest.TestCase):
     def read(self, user, buyer_id=None, after_id=0):
         return get_messages(self.messages, self.products, PRODUCT.id, user, buyer_id, after_id)
 
-    def test_el_comprador_ve_solo_su_conversacion(self):
+    def test_buyer_sees_only_their_conversation(self):
         self.assertEqual([m.body for m in self.read(BUYER)], ["uno", "dos"])
 
-    def test_el_vendedor_ve_la_conversacion_del_comprador_que_indica(self):
+    def test_seller_sees_the_conversation_of_the_indicated_buyer(self):
         self.assertEqual([m.body for m in self.read(SELLER, buyer_id=OTHER_BUYER.id)], ["de otra"])
 
-    def test_solo_las_novedades_con_after_id(self):
+    def test_only_newer_messages_with_after_id(self):
         self.assertEqual([m.body for m in self.read(BUYER, after_id=1)], ["dos"])
 
-    def test_el_vendedor_no_lee_la_de_alguien_que_no_conoce(self):
+    def test_seller_cannot_read_a_strangers_conversation(self):
         with self.assertRaises(NotFoundException):
             self.read(SELLER, buyer_id=99)
 
@@ -166,12 +179,12 @@ class GetConversationsTests(unittest.TestCase):
         create_message(self.messages, products, PRODUCT.id, say("buenas"), OTHER_BUYER)
         create_message(self.messages, products, PRODUCT.id, say("dime", BUYER.id), SELLER)
 
-    def test_el_vendedor_ve_una_fila_por_comprador_con_el_ultimo_mensaje(self):
+    def test_seller_sees_one_row_per_buyer_with_the_last_message(self):
         rows = get_conversations(self.messages, SELLER)
 
         self.assertEqual([(row.buyer_id, row.last_message.body, row.other.name) for row in rows], [(BUYER.id, "dime", "Marcos"), (OTHER_BUYER.id, "buenas", "Irene")])
 
-    def test_el_comprador_ve_solo_la_suya_y_la_otra_persona_es_el_vendedor(self):
+    def test_buyer_sees_only_theirs_and_the_other_person_is_the_seller(self):
         rows = get_conversations(self.messages, BUYER)
 
         self.assertEqual(len(rows), 1)
@@ -179,7 +192,7 @@ class GetConversationsTests(unittest.TestCase):
 
 
 class MappingTests(unittest.TestCase):
-    def test_las_relaciones_de_sqlalchemy_se_configuran(self):
+    def test_sqlalchemy_relationships_configure(self):
         # Detecta, sin base de datos, errores como claves foráneas ambiguas hacia users
         from sqlalchemy.orm import configure_mappers
 

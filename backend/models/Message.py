@@ -2,7 +2,7 @@ from datetime import datetime
 from typing import Optional
 
 from pydantic import field_validator
-from sqlalchemy import Text
+from sqlalchemy import Index, Text
 from sqlmodel import Field, Relationship, SQLModel
 
 from models.Product import ProductModel, ProductStatus
@@ -32,6 +32,10 @@ class MessageModel(SQLModel, table=True):
     """Un mensaje de una conversación. Una conversación es un producto más un comprador:
     el vendedor es siempre el dueño del producto, así que no hace falta guardarlo."""
     __tablename__ = "messages"
+    # Cada chat abierto consulta WHERE product_id = ? AND buyer_id = ? AND id > ? cada pocos segundos:
+    # un índice compuesto sirve esa consulta (y la bandeja) con una sola búsqueda.
+    # OJO: create_all no añade índices a una tabla que ya existe; ver CHANGELOG para crearlo a mano.
+    __table_args__ = (Index("ix_messages_conversation", "product_id", "buyer_id", "id"),)
 
     id: int | None = Field(default=None, primary_key=True)
     product_id: int = Field(foreign_key="products.id", index=True)
@@ -41,7 +45,7 @@ class MessageModel(SQLModel, table=True):
     created_at: datetime = created_at_field()
 
     # Dos claves foráneas apuntan a users: hay que decir cuál usa cada relación
-    product: Optional[ProductModel] = Relationship()
+    product: Optional[ProductModel] = Relationship(back_populates="messages")
     buyer: Optional[UserModel] = Relationship(sa_relationship_kwargs={"foreign_keys": "[MessageModel.buyer_id]"})
     sender: Optional[UserModel] = Relationship(sa_relationship_kwargs={"foreign_keys": "[MessageModel.sender_id]"})
 

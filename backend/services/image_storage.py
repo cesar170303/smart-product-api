@@ -113,9 +113,11 @@ def save_image(file_bytes: bytes, extension: str) -> tuple[str, int]:
 
 def media_path(file_name: str) -> Path | None:
     """Ruta en disco de una foto que se sirve en /media. Solo si el nombre tiene la forma de las nuestras y existe."""
-    if not IMAGE_URL_PATTERN.fullmatch(f"{MEDIA_URL_PREFIX}/{file_name}"):
+    match = IMAGE_URL_PATTERN.fullmatch(f"{MEDIA_URL_PREFIX}/{file_name}")
+    if not match:
         return None
-    file_path = UPLOAD_DIR / file_name
+    # Se construye con los grupos validados, no con el texto de la petición
+    file_path = UPLOAD_DIR / f"{match.group(1)}.{match.group(2)}"
     return file_path if file_path.is_file() else None
 
 

@@ -20,6 +20,11 @@ La versión del proyecto vive en [`frontend/package.json`](frontend/package.json
 - El pedido solo trae `buyer_id`: Mis ventas muestra "comprador nº N" en vez del nombre.
 - `ProductNotFoundException` responde en inglés ("Product with ID n not found"); el resto de errores, en español.
 
+## [0.9.1] - 2026-10-25
+
+### Corregido
+- CodeQL marcaba dos alertas `py/path-injection` en `GET /media`: la ruta del disco se construye ahora con los grupos validados por `IMAGE_URL_PATTERN`, no con el texto de la petición. No era explotable, porque el patrón solo admite `<32 hex>.(jpg|png|webp)`.
+
 ## [0.9.0] - 2026-10-25
 
 ### Añadido / Cambiado

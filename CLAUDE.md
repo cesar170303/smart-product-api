@@ -30,7 +30,7 @@ backend/
   router/          endpoints: auth, products, uploads, orders, messages
   use_cases/       una función por operación. OJO: GetGroductId.py (con typo) = get_product_id
   repository/      único sitio que toca la sesión (BaseRepository + uno por entidad)
-  models/          tablas y DTOs: User, Product, Category, Order, Message, common
+  models/          tablas y DTOs: User, Product, Category, Order, Message, UploadedFile, common
   services/        ai_services.py (Gemini), image_storage.py (validar y guardar fotos)
   tests/           unittest del chat, con repositorios falsos (sin BD)
 frontend/src/

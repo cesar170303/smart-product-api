@@ -2,10 +2,8 @@ from fastapi import FastAPI
 from sqlmodel import SQLModel
 from core.database import engine
 from contextlib import asynccontextmanager
-import models  # noqa: F401  (registra las 5 tablas en SQLModel.metadata antes del create_all)
-from fastapi.staticfiles import StaticFiles
+import models  # noqa: F401  (registra las tablas en SQLModel.metadata antes del create_all)
 from router import auth, messages, orders, products, uploads
-from services.image_storage import MEDIA_URL_PREFIX, UPLOAD_DIR
 from core.exceptions import AppException, ProductNotFoundException, app_exception_handler, exception_handler, product_not_found_exception_handler, validation_exception_handler, Starlette_exception_handler, rate_limit_exceeded_handler
 from core.rate_limit import limiter
 from slowapi.errors import RateLimitExceeded
@@ -54,9 +52,6 @@ app.add_exception_handler(AppException ,app_exception_handler)
 # slowapi busca el limiter en app.state; el handler devuelve el 429 en español
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded ,rate_limit_exceeded_handler)
-# Las fotos subidas se sirven en GET /media/<archivo>. La carpeta debe existir antes de montarla.
-UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
-app.mount(MEDIA_URL_PREFIX, StaticFiles(directory=UPLOAD_DIR), name="media")
 
 app.include_router(products.router)
 app.include_router(uploads.router)

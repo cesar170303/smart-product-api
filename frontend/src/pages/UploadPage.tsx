@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { ApiError, createProduct, getProducts, uploadImage } from '../api/client';
 import { useAuth } from '../auth/AuthContext';
 import BackToListing from '../components/BackToListing';
+import BusyDialog from '../components/BusyDialog';
 import FormAlert from '../components/FormAlert';
 import ListingPreview from '../components/ListingPreview';
 import PageShell from '../components/PageShell';
@@ -155,6 +156,16 @@ export default function UploadPage() {
   };
 
   const buttonLabel = { idle: 'Publicar producto', uploading: 'Subiendo la foto…', publishing: 'Publicando…' }[step];
+  const aiPicksCategory = values.category.trim() === '';
+  const busyDialog = {
+    uploading: { title: 'Subiendo la foto…', detail: 'No cierres esta ventana.' },
+    publishing: {
+      title: 'Publicando tu anuncio…',
+      detail: aiPicksCategory
+        ? 'La IA está eligiendo la categoría según el nombre. Puede tardar unos segundos: no cierres esta ventana.'
+        : 'No cierres esta ventana.',
+    },
+  };
 
   return (
     <PageShell search={<BackToListing />}>
@@ -233,6 +244,7 @@ export default function UploadPage() {
           <p className="mt-3 text-sm text-ink-faint">Una muestra: si dejas la categoría vacía, la IA la elige al publicar.</p>
         </aside>
       </div>
+      {step !== 'idle' && <BusyDialog {...busyDialog[step]} />}
     </PageShell>
   );
 }

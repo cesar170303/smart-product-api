@@ -197,4 +197,19 @@ describe('UploadPage', () => {
     expect(await screen.findByTestId('where')).toHaveTextContent('/login?next=%2Fsubir');
     expect(sessionStorage.getItem('access_token')).toBeNull();
   });
+
+  it('mientras publica muestra un aviso que cubre la pantalla y explica que la IA elige la categoría', async () => {
+    signInAs(5);
+    vi.mocked(uploadImage).mockResolvedValue('/media/0123456789abcdef0123456789abcdef.png');
+    let finish!: (product: typeof exampleProduct) => void;
+    vi.mocked(createProduct).mockReturnValue(new Promise((resolve) => (finish = resolve)));
+    renderUpload();
+
+    await fillForm();
+    await submit();
+
+    expect(await screen.findByRole('dialog')).toHaveTextContent('La IA está eligiendo la categoría');
+    finish({ ...exampleProduct, id: 35 });
+    expect(await screen.findByTestId('where')).toHaveTextContent('/producto/35');
+  });
 });

@@ -20,6 +20,18 @@ La versión del proyecto vive en [`frontend/package.json`](frontend/package.json
 - El pedido solo trae `buyer_id`: Mis ventas muestra "comprador nº N" en vez del nombre.
 - `ProductNotFoundException` responde en inglés ("Product with ID n not found"); el resto de errores, en español.
 
+## [0.9.0] - 2026-10-25
+
+### Añadido / Cambiado
+- **Aviso mientras se publica**: al subir un producto, una capa cubre la pantalla mientras se sube la foto y mientras la IA elige la categoría (si se dejó vacía), para no volver a pulsar ni salir.
+- **Subida segura de fotos**: la extensión se comprueba contra JPG, PNG y WEBP antes de leer el archivo, y la firma del contenido tiene que coincidir con esa extensión.
+- Tabla nueva `uploaded_files`: guarda quién subió cada foto, su nombre original (saneado, máx. 255 caracteres) y su nombre de almacenamiento (UUID v4 + extensión). `POST /uploads` devuelve también `original_name`.
+- `GET /media/{nombre}` es una ruta propia en lugar de `StaticFiles`: sirve solo nombres con la forma de las nuestras, con el `Content-Type` de su extensión y `X-Content-Type-Options: nosniff`.
+
+### Fallos conocidos
+- Las fotos subidas antes de 0.9.0 no tienen fila en `uploaded_files`, así que no tienen nombre original.
+- `/media` ya no atiende peticiones HEAD (antes lo hacía `StaticFiles`). Los navegadores piden GET, así que no debería notarse.
+
 ## [0.8.0] - 2026-10-23
 
 ### Añadido / Cambiado
